@@ -427,6 +427,23 @@
         New here? Default PIN is <strong style="color:var(--cream)">0000</strong> — you'll set your own after signing in.
       </div>
     </form>
+
+    <!-- Shown after a successful login. Dashboard build comes in the next step —
+         for now this just proves the backend connection works end-to-end. -->
+    <div class="login-card" id="successPanel" style="display:none;">
+      <div class="card-logo">
+        <img src="assets/img/logo.png" alt="Slice45 Kitchen">
+      </div>
+      <h2 id="welcomeText">Welcome back</h2>
+      <div class="sub" id="roleText">SLICE45 KITCHEN</div>
+      <div style="background:rgba(78,154,99,0.12); border:1px solid rgba(78,154,99,0.35); color:#B6E0BE; font-size:12.5px; padding:12px; border-radius:10px; margin:18px 0; text-align:center;">
+        &#10003; Signed in successfully. Backend connection confirmed.
+      </div>
+      <div class="card-footer" style="margin-bottom:16px;">
+        Dashboard build is next — this screen is a temporary placeholder.
+      </div>
+      <button type="button" class="btn-primary" id="signOutBtn">Sign Out</button>
+    </div>
   </div>
 
 <script>
@@ -463,13 +480,44 @@
      inside handleLogin() with the real fetch() call.
      ========================================================= */
 
-  // TODO: set this once the Apps Script Web App is deployed
+  // PASTE your Apps Script Web App URL here (ends in /exec)
   const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 
-  const form      = document.getElementById('loginForm');
-  const errorBox  = document.getElementById('errorMsg');
-  const errorText = document.getElementById('errorText');
-  const loginBtn  = document.getElementById('loginBtn');
+  const form         = document.getElementById('loginForm');
+  const errorBox     = document.getElementById('errorMsg');
+  const errorText    = document.getElementById('errorText');
+  const loginBtn     = document.getElementById('loginBtn');
+  const successPanel = document.getElementById('successPanel');
+  const welcomeText  = document.getElementById('welcomeText');
+  const roleText     = document.getElementById('roleText');
+  const signOutBtn   = document.getElementById('signOutBtn');
+
+  // If a valid session is already saved, skip straight to the success panel
+  (function checkExistingSession(){
+    const token = localStorage.getItem('slice45_token') || sessionStorage.getItem('slice45_token');
+    const userRaw = localStorage.getItem('slice45_user') || sessionStorage.getItem('slice45_user');
+    if (token && userRaw) {
+      const user = JSON.parse(userRaw);
+      showSuccess(user);
+    }
+  })();
+
+  signOutBtn.addEventListener('click', function(){
+    localStorage.removeItem('slice45_token');
+    localStorage.removeItem('slice45_user');
+    sessionStorage.removeItem('slice45_token');
+    sessionStorage.removeItem('slice45_user');
+    successPanel.style.display = 'none';
+    form.style.display = 'block';
+    form.reset();
+  });
+
+  function showSuccess(user){
+    form.style.display = 'none';
+    successPanel.style.display = 'block';
+    welcomeText.textContent = 'Welcome, ' + user.name;
+    roleText.textContent = 'SLICE45 KITCHEN · ' + user.role.toUpperCase();
+  }
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
@@ -499,42 +547,32 @@
     loginBtn.textContent = 'Signing in...';
 
     try{
-      // ---------------------------------------------------------
-      // APPS SCRIPT API CALL — replace this block once backend is live
-      // ---------------------------------------------------------
-      // const res = await fetch(API_URL, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
-      //   body: JSON.stringify({ action: 'login', username, password })
-      // });
-      // const data = await res.json();
-      //
-      // if(!data.success){
-      //   showError(data.message || 'Incorrect username or password.');
-      //   loginBtn.disabled = false;
-      //   loginBtn.textContent = 'Sign In';
-      //   return;
-      // }
-      //
-      // // Save session
-      // const storage = remember ? localStorage : sessionStorage;
-      // storage.setItem('slice45_token', data.token);
-      // storage.setItem('slice45_user', JSON.stringify(data.user));
-      //
-      // // Force password change if required
-      // if(data.user.mustChangePassword){
-      //   window.location.href = 'settings/change-password.html?forced=1';
-      //   return;
-      // }
-      //
-      // window.location.href = 'dashboard.html';
-      // ---------------------------------------------------------
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
+        body: JSON.stringify({ action: 'login', username, password })
+      });
+      const data = await res.json();
 
-      // TEMPORARY MOCK (remove once API_URL above is live):
-      await new Promise(r => setTimeout(r, 700));
-      showError('Backend not connected yet — this is a frontend preview only.');
+      if(!data.success){
+        showError(data.message || 'Incorrect username or password.');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+        return;
+      }
+
+      // Save session (localStorage if "keep me signed in", else sessionStorage)
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('slice45_token', data.token);
+      storage.setItem('slice45_user', JSON.stringify(data.user));
+
       loginBtn.disabled = false;
       loginBtn.textContent = 'Sign In';
+
+      // NOTE: once the real dashboard exists, replace showSuccess(data.user)
+      // below with: window.location.href = data.user.mustChangePassword
+      //   ? 'settings/change-password.html?forced=1' : 'dashboard.html';
+      showSuccess(data.user);
 
     }catch(err){
       showError('Could not reach the server. Please check your connection.');
