@@ -481,7 +481,7 @@
      ========================================================= */
 
   // PASTE your Apps Script Web App URL here (ends in /exec)
-  const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwywZWkaOn6nmhpJf5iluWz7evABqcC4v10cpvI2Px_9QHeVhBhsSfQrQ3S12eM7F6jbQ/exec';
 
   const form         = document.getElementById('loginForm');
   const errorBox     = document.getElementById('errorMsg');
@@ -566,13 +566,9 @@
       storage.setItem('slice45_token', data.token);
       storage.setItem('slice45_user', JSON.stringify(data.user));
 
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Sign In';
-
-      // NOTE: once the real dashboard exists, replace showSuccess(data.user)
-      // below with: window.location.href = data.user.mustChangePassword
-      //   ? 'settings/change-password.html?forced=1' : 'dashboard.html';
-      showSuccess(data.user);
+      // NOTE: change-password.html doesn't exist yet — once it does,
+      // swap the line below for the mustChangePassword branch.
+      window.location.href = 'dashboard.html';
 
     }catch(err){
       showError('Could not reach the server. Please check your connection.');
