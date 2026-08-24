@@ -20,17 +20,18 @@
     --maroon-900:#3D0F17;
     --maroon-700:#6E1B28;
     --maroon-600:#8A2434;
-    --charcoal:#1B1214;
-    --panel:#221619;
-    --panel-2:#2A1B1F;
-    --cream:#F4E9D8;
-    --cream-dim:#D9C9AE;
-    --ember:#E2793A;
+    --on-maroon:#F4E9D8;
+    --charcoal:#F7F1E8;
+    --panel:#FFFFFF;
+    --panel-2:#F1E8DA;
+    --cream:#2B1116;
+    --cream-dim:#7A6A60;
+    --ember:#C15A22;
     --gold-line:#B98B4E;
-    --success:#4E9A63;
-    --warning:#D9A441;
-    --danger:#D95C4A;
-    --border:rgba(244,233,216,0.10);
+    --success:#2F7D46;
+    --warning:#B8791F;
+    --danger:#C23B2B;
+    --border:rgba(43,17,22,0.10);
 
     --font-display:'Space Grotesk', 'Segoe UI', sans-serif;
     --font-body:'Inter', 'Segoe UI', sans-serif;
@@ -87,7 +88,7 @@
     font-size:11.5px;
     letter-spacing:.12em;
     text-transform:uppercase;
-    color:rgba(217,201,174,0.45);
+    color:rgba(122,106,96,0.45);
     padding:0 12px 10px;
   }
   .nav-item{
@@ -100,9 +101,9 @@
     margin-bottom:4px;
     transition:background .15s ease, color .15s ease;
   }
-  .nav-item:hover{ background:rgba(244,233,216,0.06); color:var(--cream); }
+  .nav-item:hover{ background:rgba(43,17,22,0.06); color:var(--cream); }
   .nav-item.active{
-    background:linear-gradient(90deg, rgba(226,121,58,0.16), rgba(226,121,58,0.03));
+    background:linear-gradient(90deg, rgba(193,90,34,0.16), rgba(193,90,34,0.03));
     color:var(--cream);
     border-left:3px solid var(--ember);
     padding-left:10px;
@@ -117,8 +118,8 @@
     font-family:var(--font-mono);
     font-size:10px;
     letter-spacing:.05em;
-    color:rgba(217,201,174,0.4);
-    border:1px solid rgba(217,201,174,0.2);
+    color:rgba(122,106,96,0.4);
+    border:1px solid rgba(122,106,96,0.2);
     padding:3px 8px;
     border-radius:20px;
   }
@@ -162,7 +163,7 @@
     letter-spacing:.08em;
     text-transform:uppercase;
     color:var(--ember);
-    border:1px solid rgba(226,121,58,0.35);
+    border:1px solid rgba(193,90,34,0.35);
     padding:6px 13px;
     border-radius:20px;
   }
@@ -174,7 +175,8 @@
     font-family:var(--font-display);
     font-weight:700;
     font-size:15px;
-    border:1px solid rgba(244,233,216,0.15);
+    border:1px solid rgba(43,17,22,0.15);
+    color:var(--on-maroon);
   }
   .signout-btn{
     background:none; border:1px solid var(--border);
@@ -185,7 +187,7 @@
     cursor:pointer;
     transition:border-color .15s ease, color .15s ease;
   }
-  .signout-btn:hover{ border-color:var(--danger); color:#F0B4A8; }
+  .signout-btn:hover{ border-color:var(--danger); color:#8C2318; }
 
   /* ---------- Content ---------- */
   .content{ padding:34px 34px 20px; flex:1; }
@@ -234,7 +236,7 @@
     font-weight:700;
     letter-spacing:-.01em;
   }
-  .kpi-card .value.pending{ color:rgba(244,233,216,0.3); }
+  .kpi-card .value.pending{ color:rgba(43,17,22,0.3); }
   .kpi-card .sub{
     font-size:12.5px;
     color:var(--cream-dim);
@@ -257,20 +259,21 @@
     transition:border-color .15s ease, transform .1s ease;
     color:var(--cream);
   }
-  .quick-btn:hover{ border-color:rgba(226,121,58,0.4); transform:translateY(-1px); }
+  .quick-btn:hover{ border-color:rgba(193,90,34,0.4); transform:translateY(-1px); }
   .quick-btn .icon{
     width:46px; height:46px;
     border-radius:12px;
     background:linear-gradient(160deg, var(--maroon-600), var(--maroon-900));
     display:flex; align-items:center; justify-content:center;
     font-size:19px;
+    color:var(--on-maroon);
   }
   .quick-btn .label{ font-size:13.5px; text-align:center; font-weight:500; }
   .quick-btn .soon{
     font-family:var(--font-mono);
     font-size:9.5px;
     letter-spacing:.05em;
-    color:rgba(217,201,174,0.45);
+    color:rgba(122,106,96,0.45);
   }
 
   /* ---------- Empty state card ---------- */
@@ -301,25 +304,25 @@
     font-size:12px;
     letter-spacing:.05em;
     color:var(--ember);
-    border:1px solid rgba(226,121,58,0.35);
+    border:1px solid rgba(193,90,34,0.35);
     padding:9px 18px;
     border-radius:20px;
     cursor:pointer;
   }
-  .empty-card a.cta:hover{ background:rgba(226,121,58,0.08); }
+  .empty-card a.cta:hover{ background:rgba(193,90,34,0.08); }
 
   /* ---------- Event cards (My Events) ---------- */
   .events-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
   .event-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; cursor:pointer; transition:border-color .15s ease, transform .1s ease; }
-  .event-card:hover{ border-color:rgba(226,121,58,0.35); transform:translateY(-1px); }
+  .event-card:hover{ border-color:rgba(193,90,34,0.35); transform:translateY(-1px); }
   .event-card .top-row{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
   .event-card .event-id{ font-family:var(--font-mono); font-size:10.5px; color:var(--cream-dim); letter-spacing:.05em; }
   .status-pill{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:20px; border:1px solid; }
-  .status-planned{ color:var(--cream-dim); border-color:rgba(217,201,174,0.3); }
-  .status-upcoming{ color:var(--warning); border-color:rgba(217,164,65,0.4); }
-  .status-active{ color:var(--success); border-color:rgba(78,154,99,0.4); }
-  .status-completed{ color:var(--cream-dim); border-color:rgba(217,201,174,0.2); }
-  .status-cancelled{ color:var(--danger); border-color:rgba(217,92,74,0.4); }
+  .status-planned{ color:var(--cream-dim); border-color:rgba(122,106,96,0.3); }
+  .status-upcoming{ color:var(--warning); border-color:rgba(184,121,31,0.4); }
+  .status-active{ color:var(--success); border-color:rgba(47,125,70,0.4); }
+  .status-completed{ color:var(--cream-dim); border-color:rgba(122,106,96,0.2); }
+  .status-cancelled{ color:var(--danger); border-color:rgba(194,59,43,0.4); }
   .event-card h3{ font-family:var(--font-display); font-size:16px; margin-bottom:6px; }
   .event-card .meta{ font-size:12.5px; color:var(--cream-dim); display:flex; flex-direction:column; gap:4px; }
 
@@ -414,8 +417,8 @@
     <div class="nav-group">
       <div class="group-label">Events</div>
       <div class="nav-item" onclick="location.href='events.html'"><span class="dot-icon"></span> All Events</div>
-      <div class="nav-item" data-soon="Upcoming filter"><span class="dot-icon"></span> Upcoming <span class="soon-tag">Soon</span></div>
-      <div class="nav-item" data-soon="Active filter"><span class="dot-icon"></span> Active <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" onclick="location.href='events.html?filter=Upcoming'"><span class="dot-icon"></span> Upcoming</div>
+      <div class="nav-item" onclick="location.href='events.html?filter=Active'"><span class="dot-icon"></span> Active</div>
     </div>
 
     <div class="nav-group">
