@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Events — Slice45 Kitchen</title>
+<meta name="theme-color" content="#3D0F17">
+
+<style>
+  :root{
+    --maroon-900:#3D0F17; --maroon-700:#6E1B28; --maroon-600:#8A2434;
+    --charcoal:#1B1214; --panel:#221619; --panel-2:#2A1B1F;
+    --cream:#F4E9D8; --cream-dim:#D9C9AE; --ember:#E2793A; --gold-line:#B98B4E;
+    --success:#4E9A63; --warning:#D9A441; --danger:#D95C4A;
+    --border:rgba(244,233,216,0.10);
+    --font-display:'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-body:'Inter', 'Segoe UI', sans-serif;
+    --font-mono:'IBM Plex Mono', 'Courier New', monospace;
+    --sidebar-w:264px; --topbar-h:76px; --bottomnav-h:70px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ font-size:16px; }
+  html,body{ font-family:var(--font-body); background:var(--charcoal); color:var(--cream); min-height:100%; font-size:15px; line-height:1.5; }
+  a{ color:inherit; text-decoration:none; } button{ font-family:inherit; }
+
+  #authCheck{ position:fixed; inset:0; z-index:999; background:var(--charcoal); display:flex; align-items:center; justify-content:center; color:var(--cream-dim); font-family:var(--font-mono); font-size:13px; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{ width:var(--sidebar-w); background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:26px 18px; position:fixed; top:0; bottom:0; left:0; overflow-y:auto; }
+  .sidebar .brand{ display:flex; align-items:center; gap:10px; padding:6px 10px 30px; }
+  .sidebar .brand img{ height:38px; }
+  .nav-group{ margin-bottom:24px; }
+  .nav-group .group-label{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(217,201,174,0.45); padding:0 12px 10px; }
+  .nav-item{ display:flex; align-items:center; gap:12px; padding:13px 12px; border-radius:10px; font-size:15px; color:var(--cream-dim); cursor:pointer; margin-bottom:4px; transition:background .15s ease, color .15s ease; }
+  .nav-item:hover{ background:rgba(244,233,216,0.06); color:var(--cream); }
+  .nav-item.active{ background:linear-gradient(90deg, rgba(226,121,58,0.16), rgba(226,121,58,0.03)); color:var(--cream); border-left:3px solid var(--ember); padding-left:10px; font-weight:600; }
+  .nav-item .dot-icon{ width:7px; height:7px; border-radius:50%; background:currentColor; opacity:.55; flex-shrink:0; }
+  .nav-item .soon-tag{ margin-left:auto; font-family:var(--font-mono); font-size:10px; letter-spacing:.05em; color:rgba(217,201,174,0.4); border:1px solid rgba(217,201,174,0.2); padding:3px 8px; border-radius:20px; }
+
+  .main{ flex:1; margin-left:var(--sidebar-w); display:flex; flex-direction:column; min-height:100vh; }
+
+  .topbar{ height:var(--topbar-h); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 34px; position:sticky; top:0; background:rgba(27,18,20,0.85); backdrop-filter:blur(10px); z-index:10; }
+  .topbar .greeting h1{ font-family:var(--font-display); font-size:21px; font-weight:600; }
+  .topbar .greeting .date{ font-family:var(--font-mono); font-size:12.5px; color:var(--cream-dim); margin-top:4px; }
+  .topbar .user-block{ display:flex; align-items:center; gap:16px; }
+  .role-badge{ font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ember); border:1px solid rgba(226,121,58,0.35); padding:6px 13px; border-radius:20px; }
+  .avatar{ width:40px; height:40px; border-radius:50%; background:linear-gradient(160deg, var(--maroon-600), var(--maroon-900)); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:15px; border:1px solid rgba(244,233,216,0.15); }
+  .signout-btn{ background:none; border:1px solid var(--border); color:var(--cream-dim); font-size:13px; padding:10px 16px; border-radius:9px; cursor:pointer; transition:border-color .15s ease, color .15s ease; }
+  .signout-btn:hover{ border-color:var(--danger); color:#F0B4A8; }
+
+  .content{ padding:34px 34px 40px; flex:1; }
+  .section-title{ font-family:var(--font-mono); font-size:12.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--cream-dim); margin:32px 0 16px; }
+  .section-title:first-child{ margin-top:0; }
+
+  /* ---------- Create Event card ---------- */
+  .form-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:26px; position:relative; overflow:hidden; }
+  .form-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, var(--ember), transparent 70%); opacity:.7; }
+
+  .form-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px 20px; }
+  .field{ display:flex; flex-direction:column; gap:7px; }
+  .field.span-2{ grid-column:span 2; }
+  .field.span-3{ grid-column:span 3; }
+  .field label{ font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--cream-dim); font-family:var(--font-mono); }
+  .field label .req{ color:var(--ember); }
+  .field input, .field select, .field textarea{
+    padding:12px 14px; background:rgba(244,233,216,0.06); border:1px solid rgba(244,233,216,0.16);
+    border-radius:10px; color:var(--cream); font-size:14.5px; font-family:var(--font-body); outline:none;
+    transition:border-color .18s ease, background .18s ease;
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:rgba(217,201,174,0.4); }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--ember); background:rgba(244,233,216,0.09); }
+  .field select{ cursor:pointer; }
+  .field select option{ background:var(--panel-2); color:var(--cream); }
+  .field textarea{ resize:vertical; min-height:70px; font-family:var(--font-body); }
+
+  .organizer-row{ display:flex; gap:8px; }
+  .organizer-row select{ flex:1; }
+  .icon-add-btn{
+    flex-shrink:0; width:44px; border:1px solid rgba(244,233,216,0.16); background:rgba(244,233,216,0.06);
+    border-radius:10px; color:var(--cream); font-size:18px; cursor:pointer; transition:border-color .15s ease;
+  }
+  .icon-add-btn:hover{ border-color:var(--ember); }
+  .organizer-quickadd{ display:none; gap:8px; margin-top:8px; }
+  .organizer-quickadd.show{ display:flex; }
+  .organizer-quickadd input{ flex:1; padding:10px 12px; background:rgba(244,233,216,0.06); border:1px solid rgba(244,233,216,0.16); border-radius:9px; color:var(--cream); font-size:13.5px; }
+  .organizer-quickadd button{ flex-shrink:0; padding:0 16px; background:var(--maroon-600); border:1px solid rgba(244,233,216,0.14); border-radius:9px; color:var(--cream); font-size:12.5px; cursor:pointer; }
+
+  .form-actions{ display:flex; align-items:center; gap:14px; margin-top:24px; }
+  .btn-primary{
+    padding:13px 28px; background:linear-gradient(180deg, var(--maroon-600), var(--maroon-700));
+    border:1px solid rgba(244,233,216,0.14); color:var(--cream); font-family:var(--font-display);
+    font-weight:600; font-size:14px; border-radius:10px; cursor:pointer; transition:transform .12s ease, box-shadow .18s ease;
+  }
+  .btn-primary:hover{ box-shadow:0 8px 22px rgba(226,121,58,0.22); }
+  .btn-primary:disabled{ opacity:.6; cursor:not-allowed; }
+  .form-msg{ font-size:12.5px; font-family:var(--font-mono); }
+  .form-msg.error{ color:#F0B4A8; }
+  .form-msg.success{ color:#B6E0BE; }
+
+  /* ---------- Events list ---------- */
+  .events-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; }
+  .event-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; cursor:pointer; transition:border-color .15s ease, transform .1s ease; }
+  .event-card:hover{ border-color:rgba(226,121,58,0.35); transform:translateY(-1px); }
+  .event-card .top-row{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .event-card .event-id{ font-family:var(--font-mono); font-size:10.5px; color:var(--cream-dim); letter-spacing:.05em; }
+  .status-pill{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:20px; border:1px solid; }
+  .status-planned{ color:var(--cream-dim); border-color:rgba(217,201,174,0.3); }
+  .status-upcoming{ color:var(--warning); border-color:rgba(217,164,65,0.4); }
+  .status-active{ color:var(--success); border-color:rgba(78,154,99,0.4); }
+  .status-completed{ color:var(--cream-dim); border-color:rgba(217,201,174,0.2); }
+  .status-cancelled{ color:var(--danger); border-color:rgba(217,92,74,0.4); }
+  .event-card h3{ font-family:var(--font-display); font-size:16px; margin-bottom:6px; }
+  .event-card .meta{ font-size:12.5px; color:var(--cream-dim); display:flex; flex-direction:column; gap:4px; }
+  .event-card .meta span{ display:flex; gap:6px; }
+
+  .empty-card{ background:var(--panel); border:1px dashed var(--border); border-radius:16px; padding:46px 24px; text-align:center; }
+  .empty-card .icon{ font-size:32px; margin-bottom:14px; opacity:.5; }
+  .empty-card h3{ font-family:var(--font-display); font-size:17px; margin-bottom:8px; }
+  .empty-card p{ font-size:13.5px; color:var(--cream-dim); max-width:400px; margin:0 auto; line-height:1.6; }
+
+  .toast{ position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--panel-2); border:1px solid var(--border); color:var(--cream); font-size:12.5px; padding:12px 18px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:50; max-width:80vw; text-align:center; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .bottom-nav{ display:none; }
+
+  @media (max-width: 980px){
+    .form-grid{ grid-template-columns:repeat(2, 1fr); }
+    .field.span-2{ grid-column:span 2; }
+    .field.span-3{ grid-column:span 2; }
+  }
+  @media (max-width: 720px){
+    .sidebar{ display:none; }
+    .main{ margin-left:0; padding-bottom:var(--bottomnav-h); }
+    .content{ padding:18px 16px 8px; }
+    .topbar{ padding:0 16px; }
+    .topbar .greeting h1{ font-size:16px; }
+    .form-grid{ grid-template-columns:1fr; }
+    .field.span-2, .field.span-3{ grid-column:span 1; }
+    .bottom-nav{ display:flex; position:fixed; bottom:0; left:0; right:0; height:var(--bottomnav-h); background:rgba(27,18,20,0.96); backdrop-filter:blur(14px); border-top:1px solid var(--border); z-index:20; padding-bottom:env(safe-area-inset-bottom); }
+    .bottom-nav .bn-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:10px; color:var(--cream-dim); cursor:pointer; }
+    .bottom-nav .bn-item.active{ color:var(--ember); }
+    .bottom-nav .bn-icon{ font-size:17px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="authCheck">Checking your session…</div>
+
+<div class="app" id="appShell" style="display:none;">
+
+  <nav class="sidebar">
+    <div class="brand"><img src="assets/img/logo.png" alt="Slice45 Kitchen"></div>
+
+    <div class="nav-group">
+      <div class="nav-item" onclick="location.href='dashboard.html'"><span class="dot-icon"></span> Dashboard</div>
+    </div>
+    <div class="nav-group">
+      <div class="group-label">Events</div>
+      <div class="nav-item active"><span class="dot-icon"></span> All Events</div>
+      <div class="nav-item" data-soon="Upcoming filter"><span class="dot-icon"></span> Upcoming <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-soon="Active filter"><span class="dot-icon"></span> Active <span class="soon-tag">Soon</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="group-label">Operations</div>
+      <div class="nav-item" onclick="location.href='daily-sales.html'"><span class="dot-icon"></span> Daily Sales</div>
+      <div class="nav-item" data-soon="Expenses entry"><span class="dot-icon"></span> Expenses <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-soon="Staff module"><span class="dot-icon"></span> Staff <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-soon="Catering module"><span class="dot-icon"></span> Catering <span class="soon-tag">Soon</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="group-label">Reports</div>
+      <div class="nav-item" data-soon="Reports Centre"><span class="dot-icon"></span> Reports <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-soon="Documents"><span class="dot-icon"></span> Documents <span class="soon-tag">Soon</span></div>
+    </div>
+    <div class="nav-group" style="margin-top:auto;">
+      <div class="nav-item" data-soon="Settings"><span class="dot-icon"></span> Settings <span class="soon-tag">Soon</span></div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="greeting">
+        <h1>Events</h1>
+        <div class="date" id="dateText"></div>
+      </div>
+      <div class="user-block">
+        <span class="role-badge" id="roleBadge">ROLE</span>
+        <div class="avatar" id="avatarInitial">?</div>
+        <button class="signout-btn" id="signOutBtn">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="section-title">Create Event</div>
+      <div class="form-card">
+        <form id="eventForm">
+          <div class="form-grid">
+            <div class="field span-2">
+              <label>Event Name <span class="req">*</span></label>
+              <input type="text" id="eventName" placeholder="e.g. Ethara — Saadiyat Nights" required>
+            </div>
+            <div class="field">
+              <label>Event Type <span class="req">*</span></label>
+              <select id="eventType" required><option value="">Select…</option></select>
+            </div>
+
+            <div class="field span-2">
+              <label>Organizer</label>
+              <div class="organizer-row">
+                <select id="organizerId"><option value="">— No organizer / Direct catering —</option></select>
+                <button type="button" class="icon-add-btn" id="toggleOrgAdd" title="Add new organizer">＋</button>
+              </div>
+              <div class="organizer-quickadd" id="orgQuickAdd">
+                <input type="text" id="newOrgName" placeholder="New organizer name">
+                <button type="button" id="saveOrgBtn">Save</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Status</label>
+              <select id="status"><option value="">Select…</option></select>
+            </div>
+
+            <div class="field">
+              <label>Start Date <span class="req">*</span></label>
+              <input type="date" id="startDate" required>
+            </div>
+            <div class="field">
+              <label>End Date</label>
+              <input type="date" id="endDate">
+            </div>
+            <div class="field">
+              <label>Expected Sales (AED)</label>
+              <input type="number" id="expectedSales" placeholder="0" min="0">
+            </div>
+
+            <div class="field">
+              <label>Location</label>
+              <input type="text" id="location" placeholder="e.g. Saadiyat Island">
+            </div>
+            <div class="field">
+              <label>Venue</label>
+              <input type="text" id="venue" placeholder="e.g. Saadiyat Beach">
+            </div>
+            <div class="field">
+              <label>Brand</label>
+              <input type="text" id="brand" placeholder="e.g. Slice45">
+            </div>
+
+            <div class="field">
+              <label>POS Type</label>
+              <select id="posType"><option value="">Select…</option></select>
+            </div>
+            <div class="field">
+              <label>Commercial Model</label>
+              <select id="commercialModel"><option value="">Select…</option></select>
+            </div>
+            <div class="field">
+              <label>Agreement Number</label>
+              <input type="text" id="agreementNumber" placeholder="Optional">
+            </div>
+
+            <div class="field span-3">
+              <label>Notes</label>
+              <textarea id="notes" placeholder="Anything worth noting about this event…"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="createBtn">Create Event</button>
+            <span class="form-msg" id="formMsg"></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="section-title">All Events</div>
+      <div id="eventsListWrap">
+        <div class="empty-card">
+          <div class="icon">🎪</div>
+          <h3>Loading events…</h3>
+          <p></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="bn-item" onclick="location.href='dashboard.html'"><div class="bn-icon">▦</div> Dashboard</div>
+    <div class="bn-item active"><div class="bn-icon">🎪</div> Events</div>
+    <div class="bn-item" data-soon="Reports Centre"><div class="bn-icon">📊</div> Reports</div>
+    <div class="bn-item" data-soon="Settings"><div class="bn-icon">⚙</div> Settings</div>
+  </nav>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwywZWkaOn6nmhpJf5iluWz7evABqcC4v10cpvI2Px_9QHeVhBhsSfQrQ3S12eM7F6jbQ/exec';
+
+  const authCheck = document.getElementById('authCheck');
+  const appShell  = document.getElementById('appShell');
+  const toast     = document.getElementById('toast');
+
+  function getStoredSession(){
+    const token = localStorage.getItem('slice45_token') || sessionStorage.getItem('slice45_token');
+    const userRaw = localStorage.getItem('slice45_user') || sessionStorage.getItem('slice45_user');
+    if (!token || !userRaw) return null;
+    return { token, user: JSON.parse(userRaw) };
+  }
+  function clearSession(){
+    ['slice45_token','slice45_user'].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
+  }
+  function goToLogin(){ window.location.href = 'index.html'; }
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+  async function api(action, data){
+    const session = getStoredSession();
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action, token: session ? session.token : null }, data || {}))
+    });
+    return res.json();
+  }
+
+  let SESSION = null;
+
+  (async function init(){
+    SESSION = getStoredSession();
+    if (!SESSION){ goToLogin(); return; }
+
+    renderUser(SESSION.user);
+
+    const check = await api('checkSession', {}).catch(() => ({ success:false }));
+    if (!check.success){ clearSession(); goToLogin(); return; }
+
+    authCheck.style.display = 'none';
+    appShell.style.display = 'flex';
+
+    wireNav();
+    wireSignOut();
+    wireOrganizerQuickAdd();
+    wireForm();
+
+    loadDropdowns();
+    loadOrganizers();
+    loadEvents();
+  })();
+
+  function renderUser(user){
+    document.getElementById('roleBadge').textContent = user.role;
+    document.getElementById('avatarInitial').textContent = (user.name || '?').charAt(0).toUpperCase();
+    document.getElementById('dateText').textContent = new Date().toLocaleDateString('en-AE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+
+  function wireNav(){
+    document.querySelectorAll('[data-soon]').forEach(el => {
+      el.addEventListener('click', () => showToast(el.dataset.soon + ' — coming in a future step.'));
+    });
+  }
+
+  function wireSignOut(){
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      const session = getStoredSession();
+      clearSession();
+      if (session){ try{ await api('logout', {}); }catch(e){} }
+      goToLogin();
+    });
+  }
+
+  /* ---------- Dropdown lists ---------- */
+  async function loadDropdowns(){
+    try{
+      const data = await api('getDropdownLists', {});
+      if (!data.success){ showToast(data.message || 'Could not load dropdown lists.'); return; }
+      fillSelect('eventType', data.lists.eventTypes);
+      fillSelect('posType', data.lists.posTypes);
+      fillSelect('commercialModel', data.lists.commercialModels);
+      fillSelect('status', data.lists.eventStatuses);
+      document.getElementById('status').value = 'Planned';
+    }catch(err){
+      showToast('Could not reach the server for dropdown lists.');
+    }
+  }
+  function fillSelect(id, options){
+    const sel = document.getElementById(id);
+    (options || []).forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt; o.textContent = opt;
+      sel.appendChild(o);
+    });
+  }
+
+  /* ---------- Organizers ---------- */
+  async function loadOrganizers(selectId){
+    try{
+      const data = await api('listOrganizers', {});
+      if (!data.success) return;
+      const sel = document.getElementById('organizerId');
+      const current = sel.value;
+      sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+      data.organizers.forEach(org => {
+        const o = document.createElement('option');
+        o.value = org.organizerId; o.textContent = org.organizerName;
+        sel.appendChild(o);
+      });
+      sel.value = selectId || current;
+    }catch(err){ /* silent — organizer list is non-critical */ }
+  }
+
+  function wireOrganizerQuickAdd(){
+    const toggle = document.getElementById('toggleOrgAdd');
+    const panel = document.getElementById('orgQuickAdd');
+    toggle.addEventListener('click', () => panel.classList.toggle('show'));
+
+    document.getElementById('saveOrgBtn').addEventListener('click', async () => {
+      const nameInput = document.getElementById('newOrgName');
+      const name = nameInput.value.trim();
+      if (!name){ showToast('Enter an organizer name first.'); return; }
+
+      const data = await api('createOrganizer', { organizerName: name }).catch(() => null);
+      if (!data || !data.success){ showToast((data && data.message) || 'Could not add organizer.'); return; }
+
+      await loadOrganizers(data.organizerId);
+      nameInput.value = '';
+      panel.classList.remove('show');
+      showToast('Organizer added: ' + data.organizerName);
+    });
+  }
+
+  /* ---------- Create Event form ---------- */
+  function wireForm(){
+    const form = document.getElementById('eventForm');
+    const msg = document.getElementById('formMsg');
+    const btn = document.getElementById('createBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = ''; msg.className = 'form-msg';
+
+      const payload = {
+        eventName: document.getElementById('eventName').value.trim(),
+        eventType: document.getElementById('eventType').value,
+        organizerId: document.getElementById('organizerId').value,
+        status: document.getElementById('status').value,
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        expectedSales: document.getElementById('expectedSales').value,
+        location: document.getElementById('location').value.trim(),
+        venue: document.getElementById('venue').value.trim(),
+        brand: document.getElementById('brand').value.trim(),
+        posType: document.getElementById('posType').value,
+        commercialModel: document.getElementById('commercialModel').value,
+        agreementNumber: document.getElementById('agreementNumber').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+      };
+
+      if (!payload.eventName || !payload.eventType || !payload.startDate){
+        msg.textContent = 'Event Name, Event Type, and Start Date are required.';
+        msg.className = 'form-msg error';
+        return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Creating…';
+
+      const data = await api('createEvent', payload).catch(() => null);
+
+      btn.disabled = false; btn.textContent = 'Create Event';
+
+      if (!data || !data.success){
+        msg.textContent = (data && data.message) || 'Could not create event.';
+        msg.className = 'form-msg error';
+        return;
+      }
+
+      msg.textContent = 'Created ' + data.eventId + ' — ' + payload.eventName;
+      msg.className = 'form-msg success';
+      form.reset();
+      document.getElementById('status').value = 'Planned';
+      loadEvents();
+    });
+  }
+
+  /* ---------- Events list ---------- */
+  async function loadEvents(){
+    const wrap = document.getElementById('eventsListWrap');
+    try{
+      const data = await api('listEvents', {});
+      if (!data.success){ showToast(data.message || 'Could not load events.'); return; }
+
+      if (!data.events.length){
+        wrap.innerHTML = `
+          <div class="empty-card">
+            <div class="icon">🎪</div>
+            <h3>No events yet</h3>
+            <p>Create your first event above — it'll show up here immediately, and on the dashboard too.</p>
+          </div>`;
+        return;
+      }
+
+      wrap.innerHTML = '<div class="events-grid">' + data.events.map(renderEventCard).join('') + '</div>';
+
+    }catch(err){
+      wrap.innerHTML = `
+        <div class="empty-card">
+          <div class="icon">⚠</div>
+          <h3>Could not load events</h3>
+          <p>Check your connection and refresh the page.</p>
+        </div>`;
+    }
+  }
+
+  function renderEventCard(ev){
+    const statusClass = 'status-' + (ev.Status || 'planned').toLowerCase();
+    const dateRange = formatDateRange(ev.StartDate, ev.EndDate);
+    return `
+      <div class="event-card" onclick="showToast('Event detail page — coming in a future step.')">
+        <div class="top-row">
+          <span class="event-id">${ev.EventID}</span>
+          <span class="status-pill ${statusClass}">${ev.Status || 'Planned'}</span>
+        </div>
+        <h3>${escapeHtml(ev.EventName)}</h3>
+        <div class="meta">
+          <span>📅 ${dateRange}</span>
+          ${ev.Location ? `<span>📍 ${escapeHtml(ev.Location)}</span>` : ''}
+          ${ev.ExpectedSales ? `<span>💰 AED ${Number(ev.ExpectedSales).toLocaleString('en-AE')} expected</span>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function formatDateRange(start, end){
+    if (!start) return '—';
+    const s = new Date(start).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' });
+    if (!end) return s;
+    const e = new Date(end).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' });
+    return s + ' – ' + e;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+</body>
+</html>
