@@ -814,72 +814,105 @@
 
       <!-- ---------- EXPENSES VIEW ---------- -->
       <section class="view" id="view-expenses">
-        <div class="content narrow" style="padding:0;">
-          <div class="form-card">
-            <form id="expenseForm">
-              <div class="field">
-                <label>Event <span class="req">*</span></label>
-                <select id="expEventId" required><option value="">Select an event…</option></select>
-              </div>
-              <div class="field-row" style="margin-bottom:16px;">
-                <div class="field" style="margin-bottom:0;">
-                  <label>Date <span class="req">*</span></label>
-                  <input type="date" id="expenseDate" required>
+        <div class="chart-grid" style="grid-template-columns:0.85fr 1.15fr; align-items:start;">
+
+          <div>
+            <div class="form-card">
+              <form id="expenseForm">
+                <div class="field">
+                  <label>Event <span class="req">*</span></label>
+                  <select id="expEventId" required><option value="">Select an event…</option></select>
                 </div>
-                <div class="field" style="margin-bottom:0;">
-                  <label>Category <span class="req">*</span></label>
-                  <select id="category" required><option value="">Select…</option></select>
+                <div class="field-row" style="margin-bottom:16px;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Date <span class="req">*</span></label>
+                    <input type="date" id="expenseDate" required>
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Category <span class="req">*</span></label>
+                    <select id="category" required><option value="">Select…</option></select>
+                  </div>
                 </div>
-              </div>
-              <div class="field amount-field">
-                <label>Amount (AED) <span class="req">*</span></label>
-                <input type="number" id="amount" placeholder="0.00" min="0" step="0.01" required inputmode="decimal">
-              </div>
-              <div class="field">
-                <label>Description</label>
-                <input type="text" id="description" placeholder="e.g. Ice for beverage station">
-              </div>
-              <div class="field-row" style="margin-bottom:16px;">
-                <div class="field" style="margin-bottom:0;">
-                  <label>Paid To</label>
-                  <input type="text" id="paidTo" placeholder="Vendor / supplier">
+                <div class="field amount-field">
+                  <label>Amount (AED) <span class="req">*</span></label>
+                  <input type="number" id="amount" placeholder="0.00" min="0" step="0.01" required inputmode="decimal">
                 </div>
-                <div class="field" style="margin-bottom:0;">
-                  <label>Payment Method</label>
-                  <select id="paymentMethod"><option value="">Select…</option></select>
+                <div class="field">
+                  <label>Description</label>
+                  <input type="text" id="description" placeholder="e.g. Ice for beverage station">
                 </div>
-              </div>
-              <div class="field">
-                <label>Reference</label>
-                <input type="text" id="reference" placeholder="Receipt/invoice number — optional">
-              </div>
-              <div class="field">
-                <label>Receipt Photo</label>
-                <div class="receipt-zone" id="receiptZone">
-                  <div class="icon">📷</div>
-                  <div class="label">Tap to take a photo or choose a file</div>
-                  <div class="sublabel">Optional — JPG, PNG</div>
-                  <input type="file" id="receiptInput" accept="image/*" capture="environment">
+                <div class="field-row" style="margin-bottom:16px;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Paid To</label>
+                    <input type="text" id="paidTo" placeholder="Vendor / supplier">
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Payment Method</label>
+                    <select id="paymentMethod"><option value="">Select…</option></select>
+                  </div>
                 </div>
-                <div class="receipt-preview" id="receiptPreview">
-                  <img id="receiptThumb" src="" alt="Receipt preview">
-                  <div class="info" id="receiptInfo"></div>
-                  <button type="button" class="remove-btn" id="removeReceiptBtn">Remove</button>
+                <div class="field">
+                  <label>Reference</label>
+                  <input type="text" id="reference" placeholder="Receipt/invoice number — optional">
                 </div>
-              </div>
-              <div class="field">
-                <label>Notes</label>
-                <textarea id="expenseNotes" placeholder="Anything worth noting…"></textarea>
-              </div>
-              <div class="form-actions" style="flex-direction:column; align-items:stretch;">
-                <button type="submit" class="btn btn-primary btn-block" id="saveExpenseBtn">Save Expense</button>
-                <span class="form-msg" id="expenseFormMsg"></span>
-              </div>
-            </form>
+                <div class="field">
+                  <label>Receipt Photo</label>
+                  <div class="receipt-zone" id="receiptZone">
+                    <div class="icon">📷</div>
+                    <div class="label">Tap to take a photo or choose a file</div>
+                    <div class="sublabel">Optional — JPG, PNG</div>
+                    <input type="file" id="receiptInput" accept="image/*" capture="environment">
+                  </div>
+                  <div class="receipt-preview" id="receiptPreview">
+                    <img id="receiptThumb" src="" alt="Receipt preview">
+                    <div class="info" id="receiptInfo"></div>
+                    <button type="button" class="remove-btn" id="removeReceiptBtn">Remove</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Notes</label>
+                  <textarea id="expenseNotes" placeholder="Anything worth noting…"></textarea>
+                </div>
+                <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+                  <button type="submit" class="btn btn-primary btn-block" id="saveExpenseBtn">Save Expense</button>
+                  <span class="form-msg" id="expenseFormMsg"></span>
+                </div>
+              </form>
+            </div>
           </div>
 
-          <div class="section-title">Recent Entries</div>
-          <div id="recentExpensesWrap"><div class="loading-line">Loading…</div></div>
+          <div>
+            <div class="section-title">This Event So Far</div>
+            <div id="expenseSummaryWrap" class="kpi-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:6px;">
+              <div class="kpi-card"><div class="label">Entries</div><div class="value pending" id="expSumEntries">—</div></div>
+              <div class="kpi-card"><div class="label">Total Spent</div><div class="value pending" id="expSumTotal">—</div></div>
+              <div class="kpi-card"><div class="label">Avg / Entry</div><div class="value pending" id="expSumAvg">—</div></div>
+            </div>
+
+            <div class="section-title">Category Breakdown</div>
+            <div class="chart-card">
+              <div id="expCategoryWrap"><div style="font-size:12.5px; color:var(--text-muted);">Select an event to see this.</div></div>
+            </div>
+
+            <div class="section-row">
+              <div class="section-title">Recent Entries</div>
+              <div class="filter-tabs">
+                <div class="filter-tab active" data-scope="event">This Event</div>
+                <div class="filter-tab" data-scope="all">All Events</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="expenseTable">
+                <thead>
+                  <tr><th>Date</th><th>Event</th><th>Category</th><th style="text-align:right;">Amount</th><th>Paid To</th><th>Receipt</th></tr>
+                </thead>
+                <tbody id="expenseTableBody">
+                  <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -1382,7 +1415,7 @@ function navigate(view){
   if (view === 'dashboard'){ loadDashboard(); }
   if (view === 'events'){ loadOrganizers(); loadEvents(); loadEventsIntoSelect('budgetEventId'); }
   if (view === 'sales'){ loadEventsIntoSelect('saleEventId'); loadRecentSales(); loadSalesSummary(); }
-  if (view === 'expenses'){ loadEventsIntoSelect('expEventId'); loadRecentExpenses(); }
+  if (view === 'expenses'){ loadEventsIntoSelect('expEventId'); loadRecentExpenses(); loadExpenseSummary(); }
   if (view === 'staff'){ loadEventsIntoSelect('assignEventId'); loadStaffDropdown(); loadStaffList(); loadAssignments(); }
   if (view === 'catering'){ loadCateringOrders(); }
   if (view === 'documents'){ loadDocFolders(); }
@@ -1840,6 +1873,17 @@ function wireExpensesView(){
     zone.style.display = 'block';
   });
 
+  document.getElementById('expEventId').addEventListener('change', () => { loadExpenseSummary(); loadRecentExpenses(); });
+
+  document.querySelectorAll('#view-expenses .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      EXPENSE_SCOPE = tab.dataset.scope;
+      loadRecentExpenses();
+    });
+  });
+
   document.getElementById('expenseForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const msg = document.getElementById('expenseFormMsg');
@@ -1890,33 +1934,78 @@ function wireExpensesView(){
     document.getElementById('removeReceiptBtn').click();
 
     loadRecentExpenses();
+    loadExpenseSummary();
   });
 }
 
-async function loadRecentExpenses(){
-  const wrap = document.getElementById('recentExpensesWrap');
+let EXPENSE_SCOPE = 'event';
+
+async function loadExpenseSummary(){
+  const eventId = document.getElementById('expEventId').value;
+  const entriesEl = document.getElementById('expSumEntries');
+  const totalEl = document.getElementById('expSumTotal');
+  const avgEl = document.getElementById('expSumAvg');
+  const catWrap = document.getElementById('expCategoryWrap');
+
+  if (!eventId){
+    [entriesEl, totalEl, avgEl].forEach(el => { el.textContent = '—'; el.classList.add('pending'); });
+    catWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">Select an event to see this.</div>';
+    return;
+  }
   try{
-    const data = await api('listExpenses', {});
+    const data = await api('listExpenses', { eventId, limit: 500 });
+    if (!data.success) return;
+    const expenses = data.expenses;
+    const total = expenses.reduce((s, x) => s + (Number(x.Amount) || 0), 0);
+    const avg = expenses.length ? total / expenses.length : 0;
+
+    entriesEl.textContent = expenses.length; entriesEl.classList.remove('pending');
+    totalEl.textContent = fmtCurrency(total); totalEl.classList.remove('pending');
+    avgEl.textContent = fmtCurrency(avg); avgEl.classList.remove('pending');
+
+    const byCategory = {};
+    expenses.forEach(ex => {
+      const cat = ex.Category || 'Other';
+      byCategory[cat] = (byCategory[cat] || 0) + (Number(ex.Amount) || 0);
+    });
+    const catData = Object.keys(byCategory).map(cat => ({ category: cat, amount: byCategory[cat] })).sort((a, b) => b.amount - a.amount);
+
+    if (!catData.length){
+      catWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">No expenses recorded for this event yet.</div>';
+    } else {
+      const max = Math.max(...catData.map(c => c.amount));
+      catWrap.innerHTML = catData.map(c => `
+        <div class="bar-row">
+          <div class="bar-label"><span class="name">${escapeHtml(c.category)}</span><span class="val">${fmtCurrency(c.amount)}</span></div>
+          <div class="bar-track"><div class="bar-fill accent" style="width:${max ? (c.amount / max * 100) : 0}%"></div></div>
+        </div>`).join('');
+    }
+  }catch(err){ /* non-critical */ }
+}
+
+async function loadRecentExpenses(){
+  const tbody = document.getElementById('expenseTableBody');
+  const eventId = document.getElementById('expEventId').value;
+  const scope = (EXPENSE_SCOPE === 'event' && eventId) ? { eventId, limit: 200 } : { limit: 30 };
+
+  try{
+    const data = await api('listExpenses', scope);
     if (!data.success){ showToast(data.message || 'Could not load recent expenses.'); return; }
     if (!data.expenses.length){
-      wrap.innerHTML = '<div class="empty-card">No expenses yet — the one you just saved will appear here.</div>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No expenses yet.</td></tr>';
       return;
     }
-    wrap.innerHTML = data.expenses.slice(0, 15).map(ex => `
-      <div class="row-card">
-        <div class="top-row">
-          <span class="primary">${escapeHtml(ex.Category)}</span>
-          <span class="amount">AED ${Number(ex.Amount).toLocaleString('en-AE')}</span>
-        </div>
-        <div class="meta">
-          <span>📅 ${ex.Date ? new Date(ex.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' }) : ''}</span>
-          <span>${escapeHtml(ex.EventName)}</span>
-          ${ex.PaidTo ? `<span>→ ${escapeHtml(ex.PaidTo)}</span>` : ''}
-          ${ex.ReceiptUrl ? `<a class="receipt-link" href="${ex.ReceiptUrl}" target="_blank" rel="noopener">📎 Receipt</a>` : ''}
-        </div>
-      </div>`).join('');
+    tbody.innerHTML = data.expenses.slice(0, 20).map(ex => `
+      <tr>
+        <td>${ex.Date ? new Date(ex.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' }) : ''}</td>
+        <td>${escapeHtml(ex.EventName)}</td>
+        <td>${escapeHtml(ex.Category || '')}</td>
+        <td class="num">${fmtCurrency(ex.Amount)}</td>
+        <td>${escapeHtml(ex.PaidTo || '')}</td>
+        <td>${ex.ReceiptUrl ? `<a class="receipt-link" href="${ex.ReceiptUrl}" target="_blank" rel="noopener">📎 View</a>` : '—'}</td>
+      </tr>`).join('');
   }catch(err){
-    wrap.innerHTML = '<div class="empty-card">Could not load recent entries.</div>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Could not load recent entries.</td></tr>';
   }
 }
 
