@@ -56,7 +56,7 @@
     --shadow-card:0 1px 2px rgba(34,26,27,0.04), 0 1px 12px rgba(34,26,27,0.04);
     --shadow-pop:0 12px 32px rgba(34,26,27,0.14);
 
-    --sidebar-w:250px;
+    --sidebar-w:264px;
     --topbar-h:68px;
     --bottomnav-h:64px;
   }
@@ -414,6 +414,67 @@
     .bottom-nav .bn-item.active{ color:var(--brand); font-weight:600; }
     .bottom-nav .bn-icon{ font-size:17px; }
   }
+  /* ================= CHARTS (dashboard) ================= */
+  .chart-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:16px; align-items:start; }
+  .chart-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px; box-shadow:var(--shadow-card); }
+  .chart-card h4{ font-family:var(--font-display); font-size:14px; font-weight:600; margin-bottom:16px; }
+  .bar-row{ margin-bottom:12px; }
+  .bar-row:last-child{ margin-bottom:0; }
+  .bar-row .bar-label{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; }
+  .bar-row .bar-label .name{ color:var(--text); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%; }
+  .bar-row .bar-label .val{ color:var(--text-muted); font-family:var(--font-mono); flex-shrink:0; }
+  .bar-track{ height:8px; background:var(--surface-alt); border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:6px; background:linear-gradient(90deg, var(--brand-light), var(--brand)); }
+  .bar-fill.accent{ background:linear-gradient(90deg, var(--accent), #9C4E1F); }
+
+  /* ================= REPORTS ================= */
+  .report-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
+  .report-btn{
+    display:flex; align-items:center; gap:8px;
+    padding:11px 18px; background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:var(--radius-sm); font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .report-btn:hover{ border-color:var(--brand); background:var(--accent-soft); }
+  .report-btn .ic{ font-size:14px; }
+
+  .data-table{ width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-card); }
+  .data-table th{ text-align:left; font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-muted); background:var(--surface-alt); padding:12px 14px; border-bottom:1px solid var(--border); }
+  .data-table td{ padding:12px 14px; font-size:13px; border-bottom:1px solid var(--border); }
+  .data-table tr:last-child td{ border-bottom:none; }
+  .data-table td.num{ font-family:var(--font-mono); text-align:right; }
+  .data-table td.positive{ color:var(--success); }
+  .data-table td.negative{ color:var(--danger); }
+  .table-wrap{ overflow-x:auto; }
+
+  /* ================= FLOATING QUICK-ADD (event) ================= */
+  .fab{
+    position:fixed; bottom:26px; right:26px; z-index:40;
+    width:52px; height:52px; border-radius:50%;
+    background:linear-gradient(160deg, var(--brand-light), var(--brand-dark));
+    color:var(--on-brand); font-size:24px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(122,34,51,0.35); cursor:pointer; border:none;
+    transition:transform .12s ease;
+  }
+  .fab:hover{ transform:scale(1.06); }
+  .modal-overlay{
+    display:none; position:fixed; inset:0; z-index:200; background:rgba(34,26,27,0.45);
+    align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(2px);
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-card{ background:var(--surface); border-radius:var(--radius-lg); padding:26px; width:100%; max-width:420px; box-shadow:var(--shadow-pop); }
+  .modal-card h3{ font-family:var(--font-display); font-size:16px; margin-bottom:4px; }
+  .modal-card .sub{ font-size:12px; color:var(--text-muted); margin-bottom:20px; }
+  .modal-close{ float:right; background:none; border:none; font-size:18px; color:var(--text-muted); cursor:pointer; }
+
+  @media (max-width: 980px){
+    .chart-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width: 720px){
+    .fab{ bottom:calc(var(--bottomnav-h) + 16px); right:16px; }
+    .data-table th, .data-table td{ padding:10px; font-size:11.5px; }
+  }
 </style>
 </head>
 <body>
@@ -464,12 +525,12 @@
       <div class="nav-item" data-view="events"><span class="dot"></span> Events</div>
       <div class="nav-item" data-view="sales"><span class="dot"></span> Daily Sales</div>
       <div class="nav-item" data-view="expenses"><span class="dot"></span> Expenses</div>
-      <div class="nav-item disabled" data-soon="Staff module"><span class="dot"></span> Staff <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-view="staff"><span class="dot"></span> Staff</div>
       <div class="nav-item disabled" data-soon="Catering module"><span class="dot"></span> Catering <span class="soon-tag">Soon</span></div>
     </div>
     <div class="nav-group">
       <div class="group-label">Reports</div>
-      <div class="nav-item disabled" data-soon="Reports Centre"><span class="dot"></span> Reports <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-view="reports"><span class="dot"></span> Reports</div>
       <div class="nav-item disabled" data-soon="Documents"><span class="dot"></span> Documents <span class="soon-tag">Soon</span></div>
     </div>
     <div class="nav-group" style="margin-top:auto;">
@@ -502,6 +563,20 @@
           <div class="kpi-card"><div class="label">Total Expenses</div><div class="value pending" id="kpiExpenses">—</div></div>
           <div class="kpi-card"><div class="label">Net Profit</div><div class="value pending" id="kpiProfit">—</div></div>
           <div class="kpi-card"><div class="label">Profit Margin</div><div class="value pending" id="kpiMargin">—</div></div>
+          <div class="kpi-card"><div class="label">Avg Daily Sale</div><div class="value pending" id="kpiAvgSale">—</div></div>
+          <div class="kpi-card"><div class="label">Total Entries</div><div class="value pending" id="kpiEntries">—</div></div>
+        </div>
+
+        <div class="section-title">Financial Breakdown</div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h4>Revenue by Event</h4>
+            <div id="chartRevenueByEvent"><div class="loading-line">Loading…</div></div>
+          </div>
+          <div class="chart-card">
+            <h4>Expense Breakdown</h4>
+            <div id="chartExpenseBreakdown"><div class="loading-line">Loading…</div></div>
+          </div>
         </div>
 
         <div class="section-title">Quick Actions</div>
@@ -733,6 +808,136 @@
         </div>
       </section>
 
+      <!-- ---------- STAFF VIEW ---------- -->
+      <section class="view" id="view-staff">
+        <div class="chart-grid" style="grid-template-columns:1fr 1fr;">
+          <div>
+            <div class="section-title">Add Staff Member</div>
+            <div class="form-card">
+              <form id="staffForm">
+                <div class="field">
+                  <label>Name <span class="req">*</span></label>
+                  <input type="text" id="staffName" placeholder="e.g. Ahmed Khan" required>
+                </div>
+                <div class="field-row" style="margin-bottom:16px;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Position</label>
+                    <input type="text" id="staffPosition" placeholder="e.g. Chef, Cashier">
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Department</label>
+                    <input type="text" id="staffDepartment" placeholder="Optional">
+                  </div>
+                </div>
+                <div class="field amount-field">
+                  <label>Monthly Salary (AED) <span class="req">*</span></label>
+                  <input type="number" id="staffSalary" placeholder="0.00" min="0" step="0.01" required>
+                </div>
+                <div class="calc-preview" id="staffCalcPreview">
+                  <div class="row"><span>Daily Cost (auto)</span><span id="staffCalcDaily">AED 0.00</span></div>
+                  <div class="row"><span>Hourly Cost (auto)</span><span id="staffCalcHourly">AED 0.00</span></div>
+                </div>
+                <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+                  <button type="submit" class="btn btn-primary btn-block" id="saveStaffBtn">Add Staff Member</button>
+                  <span class="form-msg" id="staffFormMsg"></span>
+                </div>
+              </form>
+            </div>
+
+            <div class="section-title">Staff Master</div>
+            <div id="staffListWrap"><div class="loading-line">Loading…</div></div>
+          </div>
+
+          <div>
+            <div class="section-title">Assign to Event</div>
+            <div class="form-card">
+              <form id="assignForm">
+                <div class="field">
+                  <label>Event <span class="req">*</span></label>
+                  <select id="assignEventId" required><option value="">Select an event…</option></select>
+                </div>
+                <div class="field">
+                  <label>Staff Member <span class="req">*</span></label>
+                  <select id="assignStaffId" required><option value="">Select…</option></select>
+                </div>
+                <div class="field-row" style="margin-bottom:16px;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Days Assigned <span class="req">*</span></label>
+                    <input type="number" id="assignDays" placeholder="e.g. 6" min="0" step="0.5" required>
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Overtime Hours</label>
+                    <input type="number" id="assignOvertime" placeholder="Optional" min="0" step="0.5">
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Notes</label>
+                  <input type="text" id="assignNotes" placeholder="Optional">
+                </div>
+                <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+                  <button type="submit" class="btn btn-primary btn-block" id="saveAssignBtn">Assign Staff</button>
+                  <span class="form-msg" id="assignFormMsg"></span>
+                </div>
+              </form>
+            </div>
+
+            <div class="section-title">Event Assignments</div>
+            <div id="assignmentsListWrap"><div class="loading-line">Loading…</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- REPORTS VIEW ---------- -->
+      <section class="view" id="view-reports">
+        <div class="section-title">Download Reports</div>
+        <div class="report-actions">
+          <button type="button" class="report-btn" id="exportEventsBtn"><span class="ic">🎪</span> Events (CSV)</button>
+          <button type="button" class="report-btn" id="exportSalesBtn"><span class="ic">💰</span> Daily Sales (CSV)</button>
+          <button type="button" class="report-btn" id="exportExpensesBtn"><span class="ic">🧾</span> Expenses (CSV)</button>
+          <button type="button" class="report-btn" id="exportPLBtn"><span class="ic">📊</span> Event P&amp;L Summary (CSV)</button>
+        </div>
+
+        <div class="section-title">Event P&amp;L Summary</div>
+        <div class="table-wrap">
+          <table class="data-table" id="plTable">
+            <thead>
+              <tr><th>Event</th><th>Status</th><th style="text-align:right;">Revenue</th><th style="text-align:right;">Expenses</th><th style="text-align:right;">Profit</th><th style="text-align:right;">Margin</th></tr>
+            </thead>
+            <tbody id="plTableBody">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ---------- FLOATING QUICK-ADD EVENT ---------- -->
+  <button class="fab" id="fabQuickEvent" title="Quick add event">＋</button>
+  <div class="modal-overlay" id="quickEventModal">
+    <div class="modal-card">
+      <button class="modal-close" id="closeQuickModal">✕</button>
+      <h3>Quick Add Event</h3>
+      <div class="sub">Just the essentials — add more details later on the Events page.</div>
+      <form id="quickEventForm">
+        <div class="field">
+          <label>Event Name <span class="req">*</span></label>
+          <input type="text" id="qEventName" placeholder="e.g. Ethara — Saadiyat Nights" required>
+        </div>
+        <div class="field">
+          <label>Event Type <span class="req">*</span></label>
+          <select id="qEventType" required><option value="">Select…</option></select>
+        </div>
+        <div class="field">
+          <label>Start Date <span class="req">*</span></label>
+          <input type="date" id="qStartDate" required>
+        </div>
+        <div class="form-actions" style="flex-direction:column; align-items:stretch; margin-top:8px;">
+          <button type="submit" class="btn btn-primary btn-block" id="qSaveBtn">Create Event</button>
+          <span class="form-msg" id="qFormMsg"></span>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -741,6 +946,7 @@
     <div class="bn-item" data-view="events"><div class="bn-icon">🎪</div>Events</div>
     <div class="bn-item" data-view="sales"><div class="bn-icon">💰</div>Sales</div>
     <div class="bn-item" data-view="expenses"><div class="bn-icon">🧾</div>Expenses</div>
+    <div class="bn-item" data-view="reports"><div class="bn-icon">📊</div>Reports</div>
   </nav>
 
 </div>
@@ -919,6 +1125,7 @@ function bootApp(user){
   wireEventsView();
   wireSalesView();
   wireExpensesView();
+  wireStaffView();
 
   loadDropdownLists();
   navigate('dashboard');
@@ -944,7 +1151,7 @@ function wireGlobalNav(){
   });
 }
 
-const VIEW_TITLES = { dashboard:'Dashboard', events:'Events', sales:'Daily Sales', expenses:'Expenses' };
+const VIEW_TITLES = { dashboard:'Dashboard', events:'Events', sales:'Daily Sales', expenses:'Expenses', staff:'Staff', reports:'Reports' };
 
 function navigate(view){
   CURRENT_VIEW = view;
@@ -965,6 +1172,8 @@ function navigate(view){
   if (view === 'events'){ loadOrganizers(); loadEvents(); }
   if (view === 'sales'){ loadEventsIntoSelect('saleEventId'); loadRecentSales(); }
   if (view === 'expenses'){ loadEventsIntoSelect('expEventId'); loadRecentExpenses(); }
+  if (view === 'staff'){ loadEventsIntoSelect('assignEventId'); loadStaffDropdown(); loadStaffList(); loadAssignments(); }
+  if (view === 'reports'){ loadReports(); }
 }
 
 /* ============================================================
@@ -974,6 +1183,7 @@ async function loadDropdownLists(){
   try{
     const data = await api('getDropdownLists', {});
     if (!data.success) return;
+    DROPDOWN_LISTS_CACHE = data.lists;
     fillSelect('eventType', data.lists.eventTypes);
     fillSelect('posType', data.lists.posTypes);
     fillSelect('commercialModel', data.lists.commercialModels);
@@ -981,9 +1191,11 @@ async function loadDropdownLists(){
     fillSelect('salePosType', data.lists.posTypes);
     fillSelect('category', data.lists.expenseCategories);
     fillSelect('paymentMethod', data.lists.paymentMethods);
+    fillSelect('qEventType', data.lists.eventTypes);
     document.getElementById('eventStatus').value = 'Planned';
   }catch(err){ /* non-critical */ }
 }
+let DROPDOWN_LISTS_CACHE = null;
 
 /* Cached events list, shared across Dashboard/Events/Sales/Expenses to avoid refetching constantly */
 let EVENTS_CACHE = null;
@@ -1023,7 +1235,11 @@ async function loadDashboard(){
     setKpi('kpiExpenses', fmtCurrency(k.totalExpenses));
     setKpi('kpiProfit', fmtCurrency(k.netProfit));
     setKpi('kpiMargin', k.profitMargin + '%');
+    setKpi('kpiAvgSale', fmtCurrency(k.avgDailySales));
+    setKpi('kpiEntries', (k.salesCount + k.expenseCount));
   }catch(err){ showToast('Could not reach the server for dashboard data.'); }
+
+  loadDashboardCharts();
 
   const wrap = document.getElementById('myEventsWrap');
   try{
@@ -1043,6 +1259,48 @@ async function loadDashboard(){
     wrap.querySelectorAll('.event-card').forEach(el => el.addEventListener('click', () => navigate('events')));
   }catch(err){
     wrap.innerHTML = '<div class="empty-card"><div class="icon">⚠</div><h3>Could not load events</h3><p>Check your connection and try again.</p></div>';
+  }
+}
+
+async function loadDashboardCharts(){
+  const revWrap = document.getElementById('chartRevenueByEvent');
+  const expWrap = document.getElementById('chartExpenseBreakdown');
+
+  try{
+    const perf = await api('getEventPerformance', {});
+    if (perf.success && perf.events.length){
+      const top = perf.events.filter(e => e.revenue > 0).slice(0, 6);
+      if (!top.length){
+        revWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">No sales recorded yet.</div>';
+      } else {
+        const max = Math.max(...top.map(e => e.revenue));
+        revWrap.innerHTML = top.map(e => `
+          <div class="bar-row">
+            <div class="bar-label"><span class="name">${escapeHtml(e.eventName)}</span><span class="val">${fmtCurrency(e.revenue)}</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${max ? (e.revenue / max * 100) : 0}%"></div></div>
+          </div>`).join('');
+      }
+    } else {
+      revWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">No data yet.</div>';
+    }
+  }catch(err){
+    revWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">Could not load.</div>';
+  }
+
+  try{
+    const brk = await api('getExpenseBreakdown', {});
+    if (brk.success && brk.breakdown.length){
+      const max = Math.max(...brk.breakdown.map(b => b.amount));
+      expWrap.innerHTML = brk.breakdown.slice(0, 6).map(b => `
+        <div class="bar-row">
+          <div class="bar-label"><span class="name">${escapeHtml(b.category)}</span><span class="val">${fmtCurrency(b.amount)}</span></div>
+          <div class="bar-track"><div class="bar-fill accent" style="width:${max ? (b.amount / max * 100) : 0}%"></div></div>
+        </div>`).join('');
+    } else {
+      expWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">No expenses recorded yet.</div>';
+    }
+  }catch(err){
+    expWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">Could not load.</div>';
   }
 }
 function setKpi(id, value){
@@ -1386,6 +1644,305 @@ async function loadRecentExpenses(){
     wrap.innerHTML = '<div class="empty-card">Could not load recent entries.</div>';
   }
 }
+
+/* ============================================================
+   STAFF VIEW
+   ============================================================ */
+function wireStaffView(){
+  document.getElementById('staffSalary').addEventListener('input', function(){
+    const preview = document.getElementById('staffCalcPreview');
+    const salary = Number(this.value);
+    if (!salary || salary <= 0){ preview.classList.remove('show'); return; }
+    const daily = salary / 30;
+    const hourly = daily / 8;
+    document.getElementById('staffCalcDaily').textContent = 'AED ' + daily.toFixed(2);
+    document.getElementById('staffCalcHourly').textContent = 'AED ' + hourly.toFixed(2);
+    preview.classList.add('show');
+  });
+
+  document.getElementById('staffForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('staffFormMsg');
+    const btn = document.getElementById('saveStaffBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      name: document.getElementById('staffName').value.trim(),
+      position: document.getElementById('staffPosition').value.trim(),
+      department: document.getElementById('staffDepartment').value.trim(),
+      monthlySalary: document.getElementById('staffSalary').value
+    };
+    if (!payload.name || !payload.monthlySalary){
+      msg.textContent = 'Name and Monthly Salary are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Adding…';
+    const data = await api('createStaff', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Add Staff Member';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not add staff member.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Added ' + payload.name;
+    msg.className = 'form-msg success';
+    e.target.reset();
+    document.getElementById('staffCalcPreview').classList.remove('show');
+    STAFF_CACHE = null;
+    loadStaffList();
+    loadStaffDropdown();
+  });
+
+  document.getElementById('assignForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('assignFormMsg');
+    const btn = document.getElementById('saveAssignBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      eventId: document.getElementById('assignEventId').value,
+      staffId: document.getElementById('assignStaffId').value,
+      daysAssigned: document.getElementById('assignDays').value,
+      overtimeHours: document.getElementById('assignOvertime').value,
+      notes: document.getElementById('assignNotes').value.trim()
+    };
+    if (!payload.eventId || !payload.staffId || !payload.daysAssigned){
+      msg.textContent = 'Event, Staff Member, and Days Assigned are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Assigning…';
+    const data = await api('assignStaff', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Assign Staff';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not assign staff.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Assigned — total cost AED ' + data.totalCost.toFixed(2);
+    msg.className = 'form-msg success';
+    document.getElementById('assignDays').value = '';
+    document.getElementById('assignOvertime').value = '';
+    document.getElementById('assignNotes').value = '';
+    loadAssignments();
+  });
+}
+
+let STAFF_CACHE = null;
+async function loadStaffDropdown(){
+  if (!STAFF_CACHE){
+    const data = await api('listStaff', {}).catch(() => null);
+    if (data && data.success) STAFF_CACHE = data.staff;
+  }
+  const sel = document.getElementById('assignStaffId');
+  sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+  (STAFF_CACHE || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.StaffID;
+    o.textContent = s.Name + (s.Position ? ' — ' + s.Position : '');
+    sel.appendChild(o);
+  });
+}
+
+async function loadStaffList(){
+  const wrap = document.getElementById('staffListWrap');
+  try{
+    if (!STAFF_CACHE){
+      const data = await api('listStaff', {});
+      if (!data.success){ showToast(data.message || 'Could not load staff.'); return; }
+      STAFF_CACHE = data.staff;
+    }
+    if (!STAFF_CACHE.length){
+      wrap.innerHTML = '<div class="empty-card">No staff added yet — use the form above.</div>';
+      return;
+    }
+    wrap.innerHTML = STAFF_CACHE.map(s => `
+      <div class="row-card">
+        <div class="top-row">
+          <span class="primary">${escapeHtml(s.Name)}</span>
+          <span class="amount">AED ${Number(s.MonthlySalary).toLocaleString('en-AE')}/mo</span>
+        </div>
+        <div class="meta">
+          ${s.Position ? `<span>${escapeHtml(s.Position)}</span>` : ''}
+          <span>Daily: AED ${Number(s.DailyCost).toFixed(2)}</span>
+          <span>Hourly: AED ${Number(s.HourlyCost).toFixed(2)}</span>
+        </div>
+      </div>`).join('');
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card">Could not load staff.</div>';
+  }
+}
+
+async function loadAssignments(){
+  const wrap = document.getElementById('assignmentsListWrap');
+  try{
+    const data = await api('listStaffAssignments', {});
+    if (!data.success){ showToast(data.message || 'Could not load assignments.'); return; }
+    if (!data.assignments.length){
+      wrap.innerHTML = '<div class="empty-card">No staff assigned to events yet.</div>';
+      return;
+    }
+    wrap.innerHTML = data.assignments.slice(0, 20).map(a => `
+      <div class="row-card">
+        <div class="top-row">
+          <span class="primary">${escapeHtml(a.StaffName)}</span>
+          <span class="amount">AED ${Number(a.TotalAllocatedCost).toLocaleString('en-AE')}</span>
+        </div>
+        <div class="meta">
+          <span>${escapeHtml(a.EventName)}</span>
+          <span>${a.DaysAssigned} day(s)</span>
+          ${Number(a.OvertimeHours) > 0 ? `<span>+${a.OvertimeHours}h OT</span>` : ''}
+        </div>
+      </div>`).join('');
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card">Could not load assignments.</div>';
+  }
+}
+
+/* ============================================================
+   REPORTS VIEW
+   ============================================================ */
+let PL_CACHE = [];
+
+async function loadReports(){
+  const tbody = document.getElementById('plTableBody');
+  try{
+    const data = await api('getEventPerformance', {});
+    if (!data.success){ showToast(data.message || 'Could not load report data.'); return; }
+    PL_CACHE = data.events;
+
+    if (!PL_CACHE.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No events yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = PL_CACHE.map(ev => `
+      <tr>
+        <td>${escapeHtml(ev.eventName)}</td>
+        <td>${escapeHtml(ev.status || '')}</td>
+        <td class="num">${fmtCurrency(ev.revenue)}</td>
+        <td class="num">${fmtCurrency(ev.expenses)}</td>
+        <td class="num ${ev.profit >= 0 ? 'positive' : 'negative'}">${fmtCurrency(ev.profit)}</td>
+        <td class="num">${ev.margin}%</td>
+      </tr>`).join('');
+  }catch(err){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Could not load report data.</td></tr>';
+  }
+}
+
+function downloadCSV(filename, headers, rows){
+  const escapeCsv = (val) => {
+    const s = String(val === undefined || val === null ? '' : val);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')){
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  };
+  const lines = [headers.map(escapeCsv).join(',')];
+  rows.forEach(row => lines.push(row.map(escapeCsv).join(',')));
+  const csvContent = lines.join('\r\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('exportEventsBtn').addEventListener('click', async () => {
+  const events = await getEventsCached(true);
+  if (!events.length){ showToast('No events to export.'); return; }
+  const headers = ['Event ID','Event Name','Organizer','Location','Type','Start Date','End Date','Status','POS Type','Commercial Model','Expected Sales'];
+  const rows = events.map(e => [e.EventID, e.EventName, e.OrganizerID, e.Location, e.EventType, e.StartDate, e.EndDate, e.Status, e.POSType, e.CommercialModel, e.ExpectedSales]);
+  downloadCSV('slice45_events.csv', headers, rows);
+  showToast('Events report downloaded.');
+});
+
+document.getElementById('exportSalesBtn').addEventListener('click', async () => {
+  const data = await api('listDailySales', { limit: 5000 }).catch(() => null);
+  if (!data || !data.success || !data.sales.length){ showToast('No sales entries to export.'); return; }
+  const headers = ['Sale ID','Event','Date','POS Type','Gross Sales','VAT','Net Sales','Cash','Card','Notes','Entered By'];
+  const rows = data.sales.map(s => [s.SaleID, s.EventName, s.Date, s.POSType, s.GrossSales, s.VATAmount, s.NetSales, s.Cash, s.Card, s.Notes, s.EnteredBy]);
+  downloadCSV('slice45_daily_sales.csv', headers, rows);
+  showToast('Daily Sales report downloaded.');
+});
+
+document.getElementById('exportExpensesBtn').addEventListener('click', async () => {
+  const data = await api('listExpenses', { limit: 5000 }).catch(() => null);
+  if (!data || !data.success || !data.expenses.length){ showToast('No expenses to export.'); return; }
+  const headers = ['Expense ID','Event','Date','Category','Description','Amount','Paid To','Payment Method','Reference','Has Receipt','Notes','Entered By'];
+  const rows = data.expenses.map(ex => [ex.ExpenseID, ex.EventName, ex.Date, ex.Category, ex.Description, ex.Amount, ex.PaidTo, ex.PaymentMethod, ex.Reference, ex.ReceiptFileID ? 'Yes' : 'No', ex.Notes, ex.EnteredBy]);
+  downloadCSV('slice45_expenses.csv', headers, rows);
+  showToast('Expenses report downloaded.');
+});
+
+document.getElementById('exportPLBtn').addEventListener('click', () => {
+  if (!PL_CACHE.length){ showToast('No P&L data to export yet.'); return; }
+  const headers = ['Event','Status','Revenue','Expenses','Profit','Margin %'];
+  const rows = PL_CACHE.map(ev => [ev.eventName, ev.status, ev.revenue, ev.expenses, ev.profit, ev.margin]);
+  downloadCSV('slice45_event_pl_summary.csv', headers, rows);
+  showToast('Event P&L Summary downloaded.');
+});
+
+/* ============================================================
+   FLOATING QUICK-ADD EVENT MODAL
+   ============================================================ */
+const fabBtn = document.getElementById('fabQuickEvent');
+const quickModal = document.getElementById('quickEventModal');
+
+fabBtn.addEventListener('click', () => {
+  quickModal.classList.add('show');
+  document.getElementById('qStartDate').value = new Date().toISOString().slice(0, 10);
+});
+document.getElementById('closeQuickModal').addEventListener('click', () => quickModal.classList.remove('show'));
+quickModal.addEventListener('click', (e) => { if (e.target === quickModal) quickModal.classList.remove('show'); });
+
+document.getElementById('quickEventForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('qFormMsg');
+  const btn = document.getElementById('qSaveBtn');
+  msg.textContent = ''; msg.className = 'form-msg';
+
+  const payload = {
+    eventName: document.getElementById('qEventName').value.trim(),
+    eventType: document.getElementById('qEventType').value,
+    startDate: document.getElementById('qStartDate').value,
+    status: 'Planned'
+  };
+  if (!payload.eventName || !payload.eventType || !payload.startDate){
+    msg.textContent = 'All three fields are required.';
+    msg.className = 'form-msg error';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Creating…';
+  const data = await api('createEvent', payload).catch(() => null);
+  btn.disabled = false; btn.textContent = 'Create Event';
+
+  if (!data || !data.success){
+    msg.textContent = (data && data.message) || 'Could not create event.';
+    msg.className = 'form-msg error';
+    return;
+  }
+
+  showToast('Created ' + data.eventId + ' — ' + payload.eventName);
+  document.getElementById('quickEventForm').reset();
+  quickModal.classList.remove('show');
+  await getEventsCached(true);
+  if (CURRENT_VIEW === 'dashboard') loadDashboard();
+  if (CURRENT_VIEW === 'events') renderEventsList();
+});
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
