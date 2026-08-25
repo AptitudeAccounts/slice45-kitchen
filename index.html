@@ -212,6 +212,8 @@
   }
   .nav-item.disabled{ cursor:default; }
   .nav-item.disabled:hover{ background:none; color:var(--text-muted); }
+  .folder-item{ cursor:pointer; }
+  .folder-item.active{ background:var(--accent-soft); color:var(--brand); font-weight:600; }
 
   .main{ flex:1; margin-left:var(--sidebar-w); display:flex; flex-direction:column; min-height:100vh; }
 
@@ -251,7 +253,7 @@
   .section-row .section-title{ margin:0; }
 
   /* ================= KPI CARDS ================= */
-  .kpi-grid{ display:grid; grid-template-columns:repeat(6, 1fr); gap:14px; }
+  .kpi-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; }
   .kpi-card{
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
     padding:18px 18px 16px; box-shadow:var(--shadow-card);
@@ -526,12 +528,12 @@
       <div class="nav-item" data-view="sales"><span class="dot"></span> Daily Sales</div>
       <div class="nav-item" data-view="expenses"><span class="dot"></span> Expenses</div>
       <div class="nav-item" data-view="staff"><span class="dot"></span> Staff</div>
-      <div class="nav-item disabled" data-soon="Catering module"><span class="dot"></span> Catering <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-view="catering"><span class="dot"></span> Catering</div>
     </div>
     <div class="nav-group">
       <div class="group-label">Reports</div>
       <div class="nav-item" data-view="reports"><span class="dot"></span> Reports</div>
-      <div class="nav-item disabled" data-soon="Documents"><span class="dot"></span> Documents <span class="soon-tag">Soon</span></div>
+      <div class="nav-item" data-view="documents"><span class="dot"></span> Documents</div>
     </div>
     <div class="nav-group" style="margin-top:auto;">
       <div class="nav-item disabled" data-soon="Settings"><span class="dot"></span> Settings <span class="soon-tag">Soon</span></div>
@@ -682,6 +684,35 @@
           </div>
         </div>
         <div id="eventsListWrap"><div class="loading-line">Loading…</div></div>
+
+        <div class="section-title">Set Event Budget</div>
+        <div class="form-card">
+          <div class="sub" style="margin-bottom:16px; font-size:12.5px; color:var(--text-muted);">Pick an event, set a revenue target and a target profit margin — cost budget and profit AED calculate automatically.</div>
+          <form id="budgetForm">
+            <div class="field-row" style="margin-bottom:16px;">
+              <div class="field" style="margin-bottom:0;">
+                <label>Event <span class="req">*</span></label>
+                <select id="budgetEventId" required><option value="">Select an event…</option></select>
+              </div>
+              <div class="field" style="margin-bottom:0;">
+                <label>Budgeted Revenue (AED) <span class="req">*</span></label>
+                <input type="number" id="budgetSales" placeholder="0.00" min="0" step="0.01" required>
+              </div>
+            </div>
+            <div class="field">
+              <label>Target Gross Profit Margin (%) <span class="req">*</span></label>
+              <input type="number" id="budgetMargin" placeholder="e.g. 50" min="0" max="100" step="0.1" required>
+            </div>
+            <div class="calc-preview" id="budgetCalcPreview">
+              <div class="row"><span>Budgeted Cost (auto)</span><span id="budgetCalcCost">AED 0.00</span></div>
+              <div class="row"><span>Budgeted Profit (auto)</span><span id="budgetCalcProfit">AED 0.00</span></div>
+            </div>
+            <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+              <button type="submit" class="btn btn-primary btn-block" id="saveBudgetBtn">Save Budget</button>
+              <span class="form-msg" id="budgetFormMsg"></span>
+            </div>
+          </form>
+        </div>
       </section>
 
       <!-- ---------- DAILY SALES VIEW ---------- -->
@@ -722,6 +753,10 @@
                 </div>
               </div>
               <div class="field">
+                <label>Other Payment</label>
+                <input type="number" id="saleOther" placeholder="Optional — vouchers, transfers, etc." min="0" step="0.01" inputmode="decimal">
+              </div>
+              <div class="field">
                 <label>Notes</label>
                 <textarea id="saleNotes" placeholder="e.g. Normal day, rained in the evening…"></textarea>
               </div>
@@ -730,6 +765,13 @@
                 <span class="form-msg" id="salesFormMsg"></span>
               </div>
             </form>
+          </div>
+
+          <div class="section-title">This Event So Far</div>
+          <div id="salesSummaryWrap" class="kpi-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:6px;">
+            <div class="kpi-card"><div class="label">Entries</div><div class="value pending" id="sumEntries">—</div></div>
+            <div class="kpi-card"><div class="label">Total Gross</div><div class="value pending" id="sumGross">—</div></div>
+            <div class="kpi-card"><div class="label">Total Net</div><div class="value pending" id="sumNet">—</div></div>
           </div>
 
           <div class="section-title">Recent Entries</div>
@@ -805,6 +847,127 @@
 
           <div class="section-title">Recent Entries</div>
           <div id="recentExpensesWrap"><div class="loading-line">Loading…</div></div>
+        </div>
+      </section>
+
+      <!-- ---------- CATERING VIEW ---------- -->
+      <section class="view" id="view-catering">
+        <div class="section-title">New Catering Order</div>
+        <div class="form-card">
+          <form id="cateringForm">
+            <div class="form-grid">
+              <div class="field span-2">
+                <label>Customer <span class="req">*</span></label>
+                <input type="text" id="catCustomer" placeholder="e.g. Fatima Al Mansoori" required>
+              </div>
+              <div class="field">
+                <label>Contact</label>
+                <input type="text" id="catContact" placeholder="Phone or email">
+              </div>
+
+              <div class="field">
+                <label>Occasion</label>
+                <input type="text" id="catOccasion" placeholder="e.g. Birthday, Wedding">
+              </div>
+              <div class="field">
+                <label>Catering Type</label>
+                <input type="text" id="catType" placeholder="e.g. Home, Corporate">
+              </div>
+              <div class="field">
+                <label>Guests</label>
+                <input type="number" id="catGuests" placeholder="Optional" min="0">
+              </div>
+
+              <div class="field">
+                <label>Date <span class="req">*</span></label>
+                <input type="date" id="catDate" required>
+              </div>
+              <div class="field span-2">
+                <label>Location</label>
+                <input type="text" id="catLocation" placeholder="Delivery / event address">
+              </div>
+
+              <div class="field">
+                <label>Quoted Amount (AED) <span class="req">*</span></label>
+                <input type="number" id="catQuoted" placeholder="0.00" min="0" step="0.01" required>
+              </div>
+              <div class="field">
+                <label>Deposit (AED)</label>
+                <input type="number" id="catDeposit" placeholder="0.00" min="0" step="0.01">
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select id="catStatus">
+                  <option value="Quotation">Quotation</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Preparation">Preparation</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Invoiced">Invoiced</option>
+                  <option value="Partially Paid">Partially Paid</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Food Cost</label>
+                <input type="number" id="catFoodCost" placeholder="0.00" min="0" step="0.01">
+              </div>
+              <div class="field">
+                <label>Labour</label>
+                <input type="number" id="catLabour" placeholder="0.00" min="0" step="0.01">
+              </div>
+              <div class="field">
+                <label>Transport</label>
+                <input type="number" id="catTransport" placeholder="0.00" min="0" step="0.01">
+              </div>
+              <div class="field">
+                <label>Packaging</label>
+                <input type="number" id="catPackaging" placeholder="0.00" min="0" step="0.01">
+              </div>
+              <div class="field">
+                <label>Other Cost</label>
+                <input type="number" id="catOtherCost" placeholder="0.00" min="0" step="0.01">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="saveCateringBtn">Create Order</button>
+              <span class="form-msg" id="cateringFormMsg"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="section-title">Catering Orders</div>
+        <div id="cateringListWrap"><div class="loading-line">Loading…</div></div>
+      </section>
+
+      <!-- ---------- DOCUMENTS VIEW ---------- -->
+      <section class="view" id="view-documents">
+        <div class="chart-grid" style="grid-template-columns:0.9fr 1.4fr;">
+          <div>
+            <div class="section-title">Folders</div>
+            <div class="form-card" style="padding:16px;">
+              <div class="inline-row" style="margin-bottom:14px;">
+                <input type="text" id="newFolderName" placeholder="New folder name" style="flex:1; padding:11px 13px; background:var(--surface-alt); border:1px solid var(--border-strong); border-radius:8px; font-size:13px;">
+                <button type="button" class="icon-add-btn" id="createFolderBtn" title="Create folder">＋</button>
+              </div>
+              <div id="folderListWrap"><div class="loading-line">Loading…</div></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title" id="filesSectionTitle">Files</div>
+            <div class="form-card" style="padding:16px;">
+              <div class="receipt-zone" id="docUploadZone" style="margin-bottom:16px; display:none;">
+                <div class="icon">📄</div>
+                <div class="label">Tap to upload a file into this folder</div>
+                <div class="sublabel">Any file type</div>
+                <input type="file" id="docFileInput">
+              </div>
+              <div id="fileListWrap"><div class="empty-card">Select a folder on the left to view its files.</div></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -895,6 +1058,7 @@
           <button type="button" class="report-btn" id="exportSalesBtn"><span class="ic">💰</span> Daily Sales (CSV)</button>
           <button type="button" class="report-btn" id="exportExpensesBtn"><span class="ic">🧾</span> Expenses (CSV)</button>
           <button type="button" class="report-btn" id="exportPLBtn"><span class="ic">📊</span> Event P&amp;L Summary (CSV)</button>
+          <button type="button" class="report-btn" id="exportPLPdfBtn"><span class="ic">📄</span> Event P&amp;L Summary (PDF)</button>
         </div>
 
         <div class="section-title">Event P&amp;L Summary</div>
@@ -904,6 +1068,18 @@
               <tr><th>Event</th><th>Status</th><th style="text-align:right;">Revenue</th><th style="text-align:right;">Expenses</th><th style="text-align:right;">Profit</th><th style="text-align:right;">Margin</th></tr>
             </thead>
             <tbody id="plTableBody">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Budget vs Actual</div>
+        <div class="table-wrap">
+          <table class="data-table" id="budgetTable">
+            <thead>
+              <tr><th>Event</th><th style="text-align:right;">Budget Revenue</th><th style="text-align:right;">Actual Revenue</th><th style="text-align:right;">Budgeted Profit</th><th style="text-align:right;">Actual Profit</th><th style="text-align:right;">Variance</th></tr>
+            </thead>
+            <tbody id="budgetTableBody">
               <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading…</td></tr>
             </tbody>
           </table>
@@ -1126,6 +1302,8 @@ function bootApp(user){
   wireSalesView();
   wireExpensesView();
   wireStaffView();
+  wireCateringView();
+  wireDocumentsView();
 
   loadDropdownLists();
   navigate('dashboard');
@@ -1151,7 +1329,7 @@ function wireGlobalNav(){
   });
 }
 
-const VIEW_TITLES = { dashboard:'Dashboard', events:'Events', sales:'Daily Sales', expenses:'Expenses', staff:'Staff', reports:'Reports' };
+const VIEW_TITLES = { dashboard:'Dashboard', events:'Events', sales:'Daily Sales', expenses:'Expenses', staff:'Staff', catering:'Catering', documents:'Documents', reports:'Reports' };
 
 function navigate(view){
   CURRENT_VIEW = view;
@@ -1169,11 +1347,13 @@ function navigate(view){
   document.getElementById('pageTitle').textContent = VIEW_TITLES[view] || 'Slice45 Kitchen';
 
   if (view === 'dashboard'){ loadDashboard(); }
-  if (view === 'events'){ loadOrganizers(); loadEvents(); }
-  if (view === 'sales'){ loadEventsIntoSelect('saleEventId'); loadRecentSales(); }
+  if (view === 'events'){ loadOrganizers(); loadEvents(); loadEventsIntoSelect('budgetEventId'); }
+  if (view === 'sales'){ loadEventsIntoSelect('saleEventId'); loadRecentSales(); loadSalesSummary(); }
   if (view === 'expenses'){ loadEventsIntoSelect('expEventId'); loadRecentExpenses(); }
   if (view === 'staff'){ loadEventsIntoSelect('assignEventId'); loadStaffDropdown(); loadStaffList(); loadAssignments(); }
-  if (view === 'reports'){ loadReports(); }
+  if (view === 'catering'){ loadCateringOrders(); }
+  if (view === 'documents'){ loadDocFolders(); }
+  if (view === 'reports'){ loadReports(); loadBudgetVsActual(); }
 }
 
 /* ============================================================
@@ -1386,6 +1566,52 @@ function wireEventsView(){
     await getEventsCached(true);
     renderEventsList();
   });
+
+  /* ---------- Budget: live GP% auto-calc ---------- */
+  function updateBudgetPreview(){
+    const sales = Number(document.getElementById('budgetSales').value);
+    const margin = Number(document.getElementById('budgetMargin').value);
+    const preview = document.getElementById('budgetCalcPreview');
+    if (!sales || sales <= 0 || isNaN(margin)){ preview.classList.remove('show'); return; }
+    const profit = sales * (margin / 100);
+    const cost = sales - profit;
+    document.getElementById('budgetCalcCost').textContent = 'AED ' + cost.toFixed(2);
+    document.getElementById('budgetCalcProfit').textContent = 'AED ' + profit.toFixed(2);
+    preview.classList.add('show');
+  }
+  document.getElementById('budgetSales').addEventListener('input', updateBudgetPreview);
+  document.getElementById('budgetMargin').addEventListener('input', updateBudgetPreview);
+
+  document.getElementById('budgetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('budgetFormMsg');
+    const btn = document.getElementById('saveBudgetBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      eventId: document.getElementById('budgetEventId').value,
+      budgetSales: document.getElementById('budgetSales').value,
+      profitMarginPercent: document.getElementById('budgetMargin').value
+    };
+    if (!payload.eventId || !payload.budgetSales || payload.profitMarginPercent === ''){
+      msg.textContent = 'Event, Budgeted Revenue, and Target Margin are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const data = await api('setEventBudget', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Save Budget';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not save budget.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Budget saved — Profit target AED ' + data.budgetedProfit.toFixed(2);
+    msg.className = 'form-msg success';
+  });
 }
 
 async function loadOrganizers(selectId){
@@ -1460,6 +1686,8 @@ function wireSalesView(){
     preview.classList.add('show');
   });
 
+  document.getElementById('saleEventId').addEventListener('change', loadSalesSummary);
+
   document.getElementById('salesForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const msg = document.getElementById('salesFormMsg');
@@ -1473,6 +1701,7 @@ function wireSalesView(){
       grossSales: document.getElementById('grossSales').value,
       cash: document.getElementById('saleCash').value,
       card: document.getElementById('saleCard').value,
+      other: document.getElementById('saleOther').value,
       notes: document.getElementById('saleNotes').value.trim()
     };
 
@@ -1498,10 +1727,12 @@ function wireSalesView(){
     document.getElementById('grossSales').value = '';
     document.getElementById('saleCash').value = '';
     document.getElementById('saleCard').value = '';
+    document.getElementById('saleOther').value = '';
     document.getElementById('saleNotes').value = '';
     document.getElementById('calcPreview').classList.remove('show');
 
     loadRecentSales();
+    loadSalesSummary();
   });
 }
 
@@ -1642,6 +1873,222 @@ async function loadRecentExpenses(){
       </div>`).join('');
   }catch(err){
     wrap.innerHTML = '<div class="empty-card">Could not load recent entries.</div>';
+  }
+}
+
+/* ---------- Daily Sales: "This Event So Far" summary ---------- */
+async function loadSalesSummary(){
+  const eventId = document.getElementById('saleEventId').value;
+  const entriesEl = document.getElementById('sumEntries');
+  const grossEl = document.getElementById('sumGross');
+  const netEl = document.getElementById('sumNet');
+
+  if (!eventId){
+    entriesEl.textContent = '—'; entriesEl.classList.add('pending');
+    grossEl.textContent = '—'; grossEl.classList.add('pending');
+    netEl.textContent = '—'; netEl.classList.add('pending');
+    return;
+  }
+  try{
+    const data = await api('listDailySales', { eventId, limit: 500 });
+    if (!data.success) return;
+    const totalGross = data.sales.reduce((s, x) => s + (Number(x.GrossSales) || 0), 0);
+    const totalNet = data.sales.reduce((s, x) => s + (Number(x.NetSales) || 0), 0);
+    entriesEl.textContent = data.sales.length; entriesEl.classList.remove('pending');
+    grossEl.textContent = fmtCurrency(totalGross); grossEl.classList.remove('pending');
+    netEl.textContent = fmtCurrency(totalNet); netEl.classList.remove('pending');
+  }catch(err){ /* non-critical */ }
+}
+
+/* ============================================================
+   CATERING VIEW
+   ============================================================ */
+function wireCateringView(){
+  document.getElementById('cateringForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('cateringFormMsg');
+    const btn = document.getElementById('saveCateringBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      customer: document.getElementById('catCustomer').value.trim(),
+      contact: document.getElementById('catContact').value.trim(),
+      occasion: document.getElementById('catOccasion').value.trim(),
+      cateringType: document.getElementById('catType').value.trim(),
+      guests: document.getElementById('catGuests').value,
+      date: document.getElementById('catDate').value,
+      location: document.getElementById('catLocation').value.trim(),
+      quotedAmount: document.getElementById('catQuoted').value,
+      deposit: document.getElementById('catDeposit').value,
+      status: document.getElementById('catStatus').value,
+      foodCost: document.getElementById('catFoodCost').value,
+      labour: document.getElementById('catLabour').value,
+      transport: document.getElementById('catTransport').value,
+      packaging: document.getElementById('catPackaging').value,
+      otherCost: document.getElementById('catOtherCost').value
+    };
+
+    if (!payload.customer || !payload.date || !payload.quotedAmount){
+      msg.textContent = 'Customer, Date, and Quoted Amount are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Creating…';
+    const data = await api('createCateringOrder', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Create Order';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not create order.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Created ' + data.orderId + ' for ' + payload.customer;
+    msg.className = 'form-msg success';
+    e.target.reset();
+    document.getElementById('catStatus').value = 'Quotation';
+    loadCateringOrders();
+  });
+}
+
+const CATERING_STATUSES = ['Quotation','Confirmed','Preparation','Delivered','Invoiced','Partially Paid','Paid','Cancelled'];
+
+async function loadCateringOrders(){
+  const wrap = document.getElementById('cateringListWrap');
+  try{
+    const data = await api('listCateringOrders', {});
+    if (!data.success){ showToast(data.message || 'Could not load catering orders.'); return; }
+    if (!data.orders.length){
+      wrap.innerHTML = '<div class="empty-card"><div class="icon">🍽️</div><h3>No catering orders yet</h3><p>Create your first order above.</p></div>';
+      return;
+    }
+    wrap.innerHTML = '<div class="events-grid">' + data.orders.map(renderCateringCard).join('') + '</div>';
+
+    wrap.querySelectorAll('select.status-select').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        const orderId = e.target.dataset.orderId;
+        const data = await api('updateCateringStatus', { orderId, status: e.target.value }).catch(() => null);
+        if (data && data.success){ showToast('Status updated to ' + e.target.value); }
+        else { showToast('Could not update status.'); }
+      });
+    });
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card">Could not load catering orders.</div>';
+  }
+}
+
+function renderCateringCard(o){
+  const options = CATERING_STATUSES.map(s => `<option value="${s}" ${s === o.Status ? 'selected' : ''}>${s}</option>`).join('');
+  return `
+    <div class="event-card" style="cursor:default;">
+      <div class="top-row">
+        <span class="event-id">${o.OrderID}</span>
+        <span class="status-pill status-active">AED ${Number(o.QuotedAmount).toLocaleString('en-AE')}</span>
+      </div>
+      <h3>${escapeHtml(o.Customer)}</h3>
+      <div class="meta">
+        ${o.Occasion ? `<span>🎉 ${escapeHtml(o.Occasion)}</span>` : ''}
+        <span>📅 ${o.Date ? new Date(o.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' }) : ''}</span>
+        ${o.Guests ? `<span>👥 ${o.Guests} guests</span>` : ''}
+        <span>Balance: AED ${Number(o.Balance).toLocaleString('en-AE')} · Profit: AED ${Number(o.Profit).toLocaleString('en-AE')}</span>
+      </div>
+      <select class="status-select" data-order-id="${o.OrderID}" style="margin-top:10px; width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-strong); font-size:12px;">
+        ${options}
+      </select>
+    </div>`;
+}
+
+/* ============================================================
+   DOCUMENTS VIEW
+   ============================================================ */
+let CURRENT_FOLDER_ID = null;
+let docFileData = null;
+
+function wireDocumentsView(){
+  document.getElementById('createFolderBtn').addEventListener('click', async () => {
+    const input = document.getElementById('newFolderName');
+    const name = input.value.trim();
+    if (!name){ showToast('Enter a folder name first.'); return; }
+    const data = await api('createDocFolder', { folderName: name }).catch(() => null);
+    if (!data || !data.success){ showToast((data && data.message) || 'Could not create folder.'); return; }
+    input.value = '';
+    showToast('Folder created: ' + name);
+    loadDocFolders();
+  });
+
+  document.getElementById('docFileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file || !CURRENT_FOLDER_ID) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result.split(',')[1];
+      showToast('Uploading ' + file.name + '…');
+      const data = await api('uploadDocFile', {
+        folderId: CURRENT_FOLDER_ID,
+        fileBase64: base64,
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream'
+      }).catch(() => null);
+      if (data && data.success){ showToast('Uploaded: ' + file.name); loadDocFiles(CURRENT_FOLDER_ID); }
+      else { showToast((data && data.message) || 'Upload failed.'); }
+      e.target.value = '';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadDocFolders(){
+  const wrap = document.getElementById('folderListWrap');
+  try{
+    const data = await api('listDocFolders', {});
+    if (!data.success){ showToast(data.message || 'Could not load folders.'); return; }
+    if (!data.folders.length){
+      wrap.innerHTML = '<div class="empty-card" style="padding:20px;">No folders yet — create one above.</div>';
+      return;
+    }
+    wrap.innerHTML = data.folders.map(f => `
+      <div class="nav-item folder-item" data-folder-id="${f.folderId}" data-folder-name="${escapeHtml(f.name)}" style="margin-bottom:4px;">
+        <span class="dot"></span> 📁 ${escapeHtml(f.name)}
+      </div>`).join('');
+    wrap.querySelectorAll('.folder-item').forEach(el => {
+      el.addEventListener('click', () => {
+        wrap.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        CURRENT_FOLDER_ID = el.dataset.folderId;
+        document.getElementById('filesSectionTitle').textContent = 'Files — ' + el.dataset.folderName;
+        document.getElementById('docUploadZone').style.display = 'block';
+        loadDocFiles(CURRENT_FOLDER_ID);
+      });
+    });
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card" style="padding:20px;">Could not load folders.</div>';
+  }
+}
+
+async function loadDocFiles(folderId){
+  const wrap = document.getElementById('fileListWrap');
+  wrap.innerHTML = '<div class="loading-line">Loading…</div>';
+  try{
+    const data = await api('listDocFiles', { folderId }).catch(() => null);
+    if (!data || !data.success){ wrap.innerHTML = '<div class="empty-card">Could not load files.</div>'; return; }
+    if (!data.files.length){
+      wrap.innerHTML = '<div class="empty-card">No files in this folder yet — upload one above.</div>';
+      return;
+    }
+    wrap.innerHTML = data.files.map(f => `
+      <div class="row-card">
+        <div class="top-row">
+          <span class="primary">📄 ${escapeHtml(f.name)}</span>
+          <a class="receipt-link" href="${f.url}" target="_blank" rel="noopener">Open</a>
+        </div>
+        <div class="meta">
+          <span>${f.sizeKB} KB</span>
+          <span>${new Date(f.uploaded).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' })}</span>
+        </div>
+      </div>`).join('');
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card">Could not load files.</div>';
   }
 }
 
@@ -1894,6 +2341,63 @@ document.getElementById('exportPLBtn').addEventListener('click', () => {
   downloadCSV('slice45_event_pl_summary.csv', headers, rows);
   showToast('Event P&L Summary downloaded.');
 });
+
+document.getElementById('exportPLPdfBtn').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span class="ic">⏳</span> Generating…';
+  btn.disabled = true;
+
+  try{
+    const data = await api('generateEventPLPDF', {});
+    if (!data.success){ showToast(data.message || 'Could not generate PDF.'); btn.innerHTML = originalText; btn.disabled = false; return; }
+
+    const byteChars = atob(data.pdfBase64);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = data.fileName || 'Slice45_Event_PL_Summary.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('PDF report downloaded.');
+  }catch(err){
+    showToast('Could not generate PDF.');
+  }
+
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+});
+
+async function loadBudgetVsActual(){
+  const tbody = document.getElementById('budgetTableBody');
+  try{
+    const data = await api('getBudgetVsActual', {});
+    if (!data.success){ tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Could not load budget data.</td></tr>'; return; }
+    if (!data.budgets.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No budgets set yet — set one on the Events page.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.budgets.map(b => `
+      <tr>
+        <td>${escapeHtml(b.eventName)}</td>
+        <td class="num">${fmtCurrency(b.budgetSales)}</td>
+        <td class="num">${fmtCurrency(b.actualSales)}</td>
+        <td class="num">${fmtCurrency(b.budgetedProfit)}</td>
+        <td class="num">${fmtCurrency(b.actualProfit)}</td>
+        <td class="num ${b.profitVariance >= 0 ? 'positive' : 'negative'}">${b.profitVariance >= 0 ? '+' : ''}${fmtCurrency(b.profitVariance)}</td>
+      </tr>`).join('');
+  }catch(err){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Could not load budget data.</td></tr>';
+  }
+}
 
 /* ============================================================
    FLOATING QUICK-ADD EVENT MODAL
