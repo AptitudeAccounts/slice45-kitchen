@@ -717,65 +717,98 @@
 
       <!-- ---------- DAILY SALES VIEW ---------- -->
       <section class="view" id="view-sales">
-        <div class="content narrow" style="padding:0;">
-          <div class="form-card">
-            <form id="salesForm">
-              <div class="field">
-                <label>Event <span class="req">*</span></label>
-                <select id="saleEventId" required><option value="">Select an event…</option></select>
-              </div>
-              <div class="field-row" style="margin-bottom:16px;">
-                <div class="field" style="margin-bottom:0;">
-                  <label>Date <span class="req">*</span></label>
-                  <input type="date" id="saleDate" required>
+        <div class="chart-grid" style="grid-template-columns:0.85fr 1.15fr; align-items:start;">
+
+          <div>
+            <div class="form-card">
+              <form id="salesForm">
+                <div class="field">
+                  <label>Event <span class="req">*</span></label>
+                  <select id="saleEventId" required><option value="">Select an event…</option></select>
                 </div>
-                <div class="field" style="margin-bottom:0;">
-                  <label>POS</label>
-                  <select id="salePosType"><option value="">Select…</option></select>
+                <div class="field-row" style="margin-bottom:16px;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Date <span class="req">*</span></label>
+                    <input type="date" id="saleDate" required>
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>POS</label>
+                    <select id="salePosType"><option value="">Select…</option></select>
+                  </div>
                 </div>
-              </div>
-              <div class="field amount-field">
-                <label>Gross Sales (AED) <span class="req">*</span></label>
-                <input type="number" id="grossSales" placeholder="0.00" min="0" step="0.01" required inputmode="decimal">
-              </div>
-              <div class="calc-preview" id="calcPreview">
-                <div class="row"><span>VAT (auto)</span><span id="calcVat">AED 0.00</span></div>
-                <div class="row"><span>Net Sales</span><span id="calcNet">AED 0.00</span></div>
-              </div>
-              <div class="field-row" style="margin-bottom:16px;">
-                <div class="field" style="margin-bottom:0;">
-                  <label>Cash</label>
-                  <input type="number" id="saleCash" placeholder="Optional" min="0" step="0.01" inputmode="decimal">
+                <div class="field amount-field">
+                  <label>Gross Sales (AED) <span class="req">*</span></label>
+                  <input type="number" id="grossSales" placeholder="0.00" min="0" step="0.01" required inputmode="decimal">
                 </div>
-                <div class="field" style="margin-bottom:0;">
-                  <label>Card</label>
-                  <input type="number" id="saleCard" placeholder="Optional" min="0" step="0.01" inputmode="decimal">
+                <div class="calc-preview" id="calcPreview">
+                  <div class="row"><span>VAT (auto)</span><span id="calcVat">AED 0.00</span></div>
+                  <div class="row"><span>Net Sales</span><span id="calcNet">AED 0.00</span></div>
                 </div>
-              </div>
-              <div class="field">
-                <label>Other Payment</label>
-                <input type="number" id="saleOther" placeholder="Optional — vouchers, transfers, etc." min="0" step="0.01" inputmode="decimal">
-              </div>
-              <div class="field">
-                <label>Notes</label>
-                <textarea id="saleNotes" placeholder="e.g. Normal day, rained in the evening…"></textarea>
-              </div>
-              <div class="form-actions" style="flex-direction:column; align-items:stretch;">
-                <button type="submit" class="btn btn-primary btn-block" id="saveSaleBtn">Save Daily Sale</button>
-                <span class="form-msg" id="salesFormMsg"></span>
-              </div>
-            </form>
+                <div class="field-row" style="margin-bottom:16px;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Cash</label>
+                    <input type="number" id="saleCash" placeholder="Optional" min="0" step="0.01" inputmode="decimal">
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Card</label>
+                    <input type="number" id="saleCard" placeholder="Optional" min="0" step="0.01" inputmode="decimal">
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Other Payment</label>
+                  <input type="number" id="saleOther" placeholder="Optional — vouchers, transfers, etc." min="0" step="0.01" inputmode="decimal">
+                </div>
+                <div class="field">
+                  <label>Notes</label>
+                  <textarea id="saleNotes" placeholder="e.g. Normal day, rained in the evening…"></textarea>
+                </div>
+                <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+                  <button type="submit" class="btn btn-primary btn-block" id="saveSaleBtn">Save Daily Sale</button>
+                  <span class="form-msg" id="salesFormMsg"></span>
+                </div>
+              </form>
+            </div>
           </div>
 
-          <div class="section-title">This Event So Far</div>
-          <div id="salesSummaryWrap" class="kpi-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:6px;">
-            <div class="kpi-card"><div class="label">Entries</div><div class="value pending" id="sumEntries">—</div></div>
-            <div class="kpi-card"><div class="label">Total Gross</div><div class="value pending" id="sumGross">—</div></div>
-            <div class="kpi-card"><div class="label">Total Net</div><div class="value pending" id="sumNet">—</div></div>
+          <div>
+            <div class="section-title">This Event So Far</div>
+            <div id="salesSummaryWrap" class="kpi-grid" style="grid-template-columns:repeat(4, 1fr); margin-bottom:6px;">
+              <div class="kpi-card"><div class="label">Entries</div><div class="value pending" id="sumEntries">—</div></div>
+              <div class="kpi-card"><div class="label">Total Gross</div><div class="value pending" id="sumGross">—</div></div>
+              <div class="kpi-card"><div class="label">Total Net</div><div class="value pending" id="sumNet">—</div></div>
+              <div class="kpi-card"><div class="label">Avg / Entry</div><div class="value pending" id="sumAvg">—</div></div>
+            </div>
+
+            <div class="chart-grid" style="grid-template-columns:1fr 1fr; margin-top:16px;">
+              <div class="chart-card">
+                <h4>Payment Split</h4>
+                <div id="paymentSplitWrap"><div style="font-size:12.5px; color:var(--text-muted);">Select an event to see this.</div></div>
+              </div>
+              <div class="chart-card">
+                <h4>Daily Trend (last 10 entries)</h4>
+                <div id="dailyTrendWrap"><div style="font-size:12.5px; color:var(--text-muted);">Select an event to see this.</div></div>
+              </div>
+            </div>
+
+            <div class="section-row">
+              <div class="section-title">Recent Entries</div>
+              <div class="filter-tabs">
+                <div class="filter-tab active" data-scope="event">This Event</div>
+                <div class="filter-tab" data-scope="all">All Events</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="salesTable">
+                <thead>
+                  <tr><th>Date</th><th>Event</th><th>POS</th><th style="text-align:right;">Gross</th><th style="text-align:right;">Net</th><th>Notes</th></tr>
+                </thead>
+                <tbody id="salesTableBody">
+                  <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div class="section-title">Recent Entries</div>
-          <div id="recentSalesWrap"><div class="loading-line">Loading…</div></div>
         </div>
       </section>
 
@@ -1511,9 +1544,9 @@ function wireEventsView(){
     showToast('Organizer added: ' + data.organizerName);
   });
 
-  document.querySelectorAll('.filter-tab').forEach(tab => {
+  document.querySelectorAll('#view-events .filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#view-events .filter-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       EVENTS_FILTER = tab.dataset.filter;
       renderEventsList();
@@ -1686,7 +1719,16 @@ function wireSalesView(){
     preview.classList.add('show');
   });
 
-  document.getElementById('saleEventId').addEventListener('change', loadSalesSummary);
+  document.getElementById('saleEventId').addEventListener('change', () => { loadSalesSummary(); loadRecentSales(); });
+
+  document.querySelectorAll('#view-sales .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#view-sales .filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      SALES_SCOPE = tab.dataset.scope;
+      loadRecentSales();
+    });
+  });
 
   document.getElementById('salesForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1736,29 +1778,31 @@ function wireSalesView(){
   });
 }
 
+let SALES_SCOPE = 'event';
+
 async function loadRecentSales(){
-  const wrap = document.getElementById('recentSalesWrap');
+  const tbody = document.getElementById('salesTableBody');
+  const eventId = document.getElementById('saleEventId').value;
+  const scope = (SALES_SCOPE === 'event' && eventId) ? { eventId, limit: 200 } : { limit: 30 };
+
   try{
-    const data = await api('listDailySales', {});
+    const data = await api('listDailySales', scope);
     if (!data.success){ showToast(data.message || 'Could not load recent sales.'); return; }
     if (!data.sales.length){
-      wrap.innerHTML = '<div class="empty-card">No sales entries yet — the one you just saved will appear here.</div>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No sales entries yet.</td></tr>';
       return;
     }
-    wrap.innerHTML = data.sales.slice(0, 15).map(s => `
-      <div class="row-card">
-        <div class="top-row">
-          <span class="primary">${escapeHtml(s.EventName)}</span>
-          <span class="amount">AED ${Number(s.GrossSales).toLocaleString('en-AE')}</span>
-        </div>
-        <div class="meta">
-          <span>📅 ${s.Date ? new Date(s.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' }) : ''}</span>
-          ${s.POSType ? `<span>${escapeHtml(s.POSType)}</span>` : ''}
-          <span>Net AED ${Number(s.NetSales).toLocaleString('en-AE')}</span>
-        </div>
-      </div>`).join('');
+    tbody.innerHTML = data.sales.slice(0, 20).map(s => `
+      <tr>
+        <td>${s.Date ? new Date(s.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' }) : ''}</td>
+        <td>${escapeHtml(s.EventName)}</td>
+        <td>${escapeHtml(s.POSType || '')}</td>
+        <td class="num">${fmtCurrency(s.GrossSales)}</td>
+        <td class="num">${fmtCurrency(s.NetSales)}</td>
+        <td style="font-size:11.5px; color:var(--text-muted);">${escapeHtml(s.Notes || '')}</td>
+      </tr>`).join('');
   }catch(err){
-    wrap.innerHTML = '<div class="empty-card">Could not load recent entries.</div>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Could not load recent entries.</td></tr>';
   }
 }
 
@@ -1876,27 +1920,68 @@ async function loadRecentExpenses(){
   }
 }
 
-/* ---------- Daily Sales: "This Event So Far" summary ---------- */
+/* ---------- Daily Sales: "This Event So Far" summary + charts ---------- */
 async function loadSalesSummary(){
   const eventId = document.getElementById('saleEventId').value;
   const entriesEl = document.getElementById('sumEntries');
   const grossEl = document.getElementById('sumGross');
   const netEl = document.getElementById('sumNet');
+  const avgEl = document.getElementById('sumAvg');
+  const splitWrap = document.getElementById('paymentSplitWrap');
+  const trendWrap = document.getElementById('dailyTrendWrap');
 
   if (!eventId){
-    entriesEl.textContent = '—'; entriesEl.classList.add('pending');
-    grossEl.textContent = '—'; grossEl.classList.add('pending');
-    netEl.textContent = '—'; netEl.classList.add('pending');
+    [entriesEl, grossEl, netEl, avgEl].forEach(el => { el.textContent = '—'; el.classList.add('pending'); });
+    splitWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">Select an event to see this.</div>';
+    trendWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">Select an event to see this.</div>';
     return;
   }
   try{
     const data = await api('listDailySales', { eventId, limit: 500 });
     if (!data.success) return;
-    const totalGross = data.sales.reduce((s, x) => s + (Number(x.GrossSales) || 0), 0);
-    const totalNet = data.sales.reduce((s, x) => s + (Number(x.NetSales) || 0), 0);
-    entriesEl.textContent = data.sales.length; entriesEl.classList.remove('pending');
+    const sales = data.sales;
+
+    const totalGross = sales.reduce((s, x) => s + (Number(x.GrossSales) || 0), 0);
+    const totalNet = sales.reduce((s, x) => s + (Number(x.NetSales) || 0), 0);
+    const totalCash = sales.reduce((s, x) => s + (Number(x.Cash) || 0), 0);
+    const totalCard = sales.reduce((s, x) => s + (Number(x.Card) || 0), 0);
+    const totalOther = sales.reduce((s, x) => s + (Number(x.Other) || 0), 0);
+    const avg = sales.length ? totalGross / sales.length : 0;
+
+    entriesEl.textContent = sales.length; entriesEl.classList.remove('pending');
     grossEl.textContent = fmtCurrency(totalGross); grossEl.classList.remove('pending');
     netEl.textContent = fmtCurrency(totalNet); netEl.classList.remove('pending');
+    avgEl.textContent = fmtCurrency(avg); avgEl.classList.remove('pending');
+
+    // Payment split chart
+    const splitData = [
+      { label: 'Cash', amount: totalCash },
+      { label: 'Card', amount: totalCard },
+      { label: 'Other', amount: totalOther }
+    ].filter(d => d.amount > 0);
+    if (!splitData.length){
+      splitWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">No Cash/Card/Other breakdown recorded yet.</div>';
+    } else {
+      const maxSplit = Math.max(...splitData.map(d => d.amount));
+      splitWrap.innerHTML = splitData.map(d => `
+        <div class="bar-row">
+          <div class="bar-label"><span class="name">${d.label}</span><span class="val">${fmtCurrency(d.amount)}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${maxSplit ? (d.amount / maxSplit * 100) : 0}%"></div></div>
+        </div>`).join('');
+    }
+
+    // Daily trend — last 10 entries by date, most recent last for a natural left-to-right read
+    const trend = sales.slice().sort((a, b) => new Date(a.Date) - new Date(b.Date)).slice(-10);
+    if (!trend.length){
+      trendWrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-muted);">No entries yet.</div>';
+    } else {
+      const maxTrend = Math.max(...trend.map(t => Number(t.GrossSales) || 0));
+      trendWrap.innerHTML = trend.map(t => `
+        <div class="bar-row">
+          <div class="bar-label"><span class="name">${new Date(t.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' })}</span><span class="val">${fmtCurrency(t.GrossSales)}</span></div>
+          <div class="bar-track"><div class="bar-fill accent" style="width:${maxTrend ? (Number(t.GrossSales) / maxTrend * 100) : 0}%"></div></div>
+        </div>`).join('');
+    }
   }catch(err){ /* non-critical */ }
 }
 
@@ -2049,16 +2134,47 @@ async function loadDocFolders(){
     }
     wrap.innerHTML = data.folders.map(f => `
       <div class="nav-item folder-item" data-folder-id="${f.folderId}" data-folder-name="${escapeHtml(f.name)}" style="margin-bottom:4px;">
-        <span class="dot"></span> 📁 ${escapeHtml(f.name)}
+        <span class="dot"></span>
+        <span class="folder-click-area" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📁 ${escapeHtml(f.name)}</span>
+        <span class="folder-rename-btn" title="Rename" style="opacity:.55; padding:2px 5px; cursor:pointer;">✎</span>
+        <span class="folder-delete-btn" title="Delete" style="opacity:.55; padding:2px 5px; cursor:pointer;">🗑</span>
       </div>`).join('');
+
     wrap.querySelectorAll('.folder-item').forEach(el => {
-      el.addEventListener('click', () => {
+      el.querySelector('.folder-click-area').addEventListener('click', () => {
         wrap.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
         el.classList.add('active');
         CURRENT_FOLDER_ID = el.dataset.folderId;
         document.getElementById('filesSectionTitle').textContent = 'Files — ' + el.dataset.folderName;
         document.getElementById('docUploadZone').style.display = 'block';
         loadDocFiles(CURRENT_FOLDER_ID);
+      });
+
+      el.querySelector('.folder-rename-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const currentName = el.dataset.folderName;
+        const newName = prompt('Rename folder:', currentName);
+        if (!newName || !newName.trim() || newName.trim() === currentName) return;
+        const data = await api('renameDocFolder', { folderId: el.dataset.folderId, newName: newName.trim() }).catch(() => null);
+        if (data && data.success){ showToast('Renamed to ' + newName.trim()); loadDocFolders(); }
+        else { showToast((data && data.message) || 'Could not rename folder.'); }
+      });
+
+      el.querySelector('.folder-delete-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const name = el.dataset.folderName;
+        if (!confirm('Delete folder "' + name + '" and everything in it? This moves it to Drive trash.')) return;
+        const data = await api('deleteDocFolder', { folderId: el.dataset.folderId }).catch(() => null);
+        if (data && data.success){
+          showToast('Deleted: ' + name);
+          if (CURRENT_FOLDER_ID === el.dataset.folderId){
+            CURRENT_FOLDER_ID = null;
+            document.getElementById('filesSectionTitle').textContent = 'Files';
+            document.getElementById('docUploadZone').style.display = 'none';
+            document.getElementById('fileListWrap').innerHTML = '<div class="empty-card">Select a folder on the left to view its files.</div>';
+          }
+          loadDocFolders();
+        } else { showToast((data && data.message) || 'Could not delete folder.'); }
       });
     });
   }catch(err){
@@ -2077,16 +2193,30 @@ async function loadDocFiles(folderId){
       return;
     }
     wrap.innerHTML = data.files.map(f => `
-      <div class="row-card">
+      <div class="row-card" data-file-id="${f.fileId}">
         <div class="top-row">
           <span class="primary">📄 ${escapeHtml(f.name)}</span>
-          <a class="receipt-link" href="${f.url}" target="_blank" rel="noopener">Open</a>
+          <span style="display:flex; gap:8px; align-items:center;">
+            <a class="receipt-link" href="${f.url}" target="_blank" rel="noopener">Open</a>
+            <span class="file-delete-btn" title="Delete" style="opacity:.55; cursor:pointer; font-size:13px;">🗑</span>
+          </span>
         </div>
         <div class="meta">
           <span>${f.sizeKB} KB</span>
           <span>${new Date(f.uploaded).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' })}</span>
         </div>
       </div>`).join('');
+
+    wrap.querySelectorAll('.file-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const row = btn.closest('.row-card');
+        const fileId = row.dataset.fileId;
+        if (!confirm('Delete this file? This moves it to Drive trash.')) return;
+        const data = await api('deleteDocFile', { fileId }).catch(() => null);
+        if (data && data.success){ showToast('File deleted.'); loadDocFiles(folderId); }
+        else { showToast((data && data.message) || 'Could not delete file.'); }
+      });
+    });
   }catch(err){
     wrap.innerHTML = '<div class="empty-card">Could not load files.</div>';
   }
