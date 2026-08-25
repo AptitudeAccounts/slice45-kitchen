@@ -3,582 +3,1391 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Slice45 Kitchen — Sign In</title>
-<meta name="theme-color" content="#3D0F17">
+<title>Slice45 Kitchen</title>
+<meta name="theme-color" content="#F6F4F1">
 
 <!-- ============================================================
-     SLICE45 KITCHEN — LOGIN SCREEN
-     Single-file page: HTML + CSS + JS together for easy editing.
-     Backend wiring point is clearly marked near the bottom in
-     the <script> block — search for "APPS SCRIPT API CALL".
+     SLICE45 KITCHEN — SINGLE-FILE APPLICATION
+     ------------------------------------------------------------
+     Everything lives in this one file: login, dashboard, events,
+     daily sales, and expenses. Navigation between them is handled
+     entirely in JavaScript (no page reloads, no separate files to
+     upload, no more 404s from a missing page).
+
+     Backend: one Apps Script Web App URL, set once below.
+     Search for "API_URL" to find it.
      ============================================================ -->
 
 <style>
-  /* ---------- Design tokens ---------- */
+  /* ================= DESIGN TOKENS — clean, professional, restrained ================= */
   :root{
-    --maroon-900:#3D0F17;   /* deepest bg / overlay base   */
-    --maroon-700:#6E1B28;   /* logo maroon                 */
-    --maroon-600:#8A2434;   /* accent maroon, hover states  */
-    --charcoal:#1B1214;     /* near-black text / card edge  */
-    --cream:#F4E9D8;        /* logo cream / primary light text */
-    --cream-dim:#D9C9AE;    /* secondary text on dark       */
-    --ember:#E2793A;        /* flame accent                 */
-    --ember-soft:#C9793A33;
-    --gold-line:#B98B4E;    /* thin divider / menu-board line */
-    --success:#4E9A63;
-    --danger:#D95C4A;
+    --bg:#F5F3EF;
+    --surface:#FFFFFF;
+    --surface-alt:#FAF8F5;
+    --border:#E6E1D8;
+    --border-strong:#D9D2C5;
+
+    --text:#221A1B;
+    --text-muted:#6E6259;
+    --text-faint:#A79C8F;
+
+    --brand:#7A2233;
+    --brand-dark:#591824;
+    --brand-light:#9C3448;
+    --on-brand:#FBF6EF;
+
+    --accent:#BD6A2E;
+    --accent-soft:rgba(189,106,46,0.10);
+
+    --success:#2E7D4F;
+    --success-soft:rgba(46,125,79,0.09);
+    --warning:#A67624;
+    --warning-soft:rgba(166,118,36,0.10);
+    --danger:#B23A2E;
+    --danger-soft:rgba(178,58,46,0.09);
 
     --font-display:'Space Grotesk', 'Segoe UI', sans-serif;
     --font-body:'Inter', 'Segoe UI', sans-serif;
     --font-mono:'IBM Plex Mono', 'Courier New', monospace;
 
-    --radius-card:18px;
-    --radius-field:10px;
+    --radius-sm:8px;
+    --radius-md:12px;
+    --radius-lg:16px;
+    --shadow-card:0 1px 2px rgba(34,26,27,0.04), 0 1px 12px rgba(34,26,27,0.04);
+    --shadow-pop:0 12px 32px rgba(34,26,27,0.14);
+
+    --sidebar-w:250px;
+    --topbar-h:68px;
+    --bottomnav-h:64px;
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ font-size:16px; }
+  html,body{ font-family:var(--font-body); background:var(--bg); color:var(--text); min-height:100%; font-size:14.5px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; }
+  ::selection{ background:var(--accent-soft); }
 
-  html,body{
-    height:100%;
-    font-family:var(--font-body);
-    background:var(--charcoal);
-    color:var(--cream);
-    overflow:hidden;
-  }
-
-  /* ---------- Background slideshow ---------- */
-  .bg-slideshow{
-    position:fixed; inset:0;
-    z-index:0;
-  }
-  .bg-slide{
-    position:absolute; inset:0;
-    background-size:cover;
-    background-position:center;
-    opacity:0;
-    transition:opacity 1.8s ease-in-out;
-    will-change:opacity;
-  }
-  .bg-slide.active{ opacity:1; }
-
-  .bg-overlay{
-    position:fixed; inset:0;
-    z-index:1;
-    background:
-      radial-gradient(120% 90% at 15% 90%, rgba(61,15,23,0.55) 0%, rgba(27,18,20,0.72) 45%, rgba(20,12,13,0.92) 100%),
-      linear-gradient(180deg, rgba(20,12,13,0.55) 0%, rgba(20,12,13,0.35) 35%, rgba(20,12,13,0.85) 100%);
-    pointer-events:none;
-  }
-
-  /* faint ember glow drifting, echoes the wood-fired oven in the brand photos */
-  .ember-glow{
-    position:fixed;
-    width:520px; height:520px;
-    border-radius:50%;
-    background:radial-gradient(circle, var(--ember-soft) 0%, transparent 70%);
-    z-index:1;
-    filter:blur(10px);
-    left:-120px; bottom:-160px;
-    animation:emberDrift 14s ease-in-out infinite alternate;
-    pointer-events:none;
-  }
-  @keyframes emberDrift{
-    0%{ transform:translate(0,0) scale(1); opacity:.55; }
-    100%{ transform:translate(60px,-40px) scale(1.15); opacity:.8; }
-  }
-
-  /* ---------- Page layout ---------- */
-  .page{
-    position:relative;
-    z-index:2;
-    height:100%;
+  /* ================= LOGIN ================= */
+  #loginScreen{
+    min-height:100vh;
     display:flex;
     align-items:center;
-    justify-content:flex-end;
-    padding:5vh 6vw;
+    justify-content:center;
+    background:
+      radial-gradient(1100px 600px at 15% -10%, rgba(122,34,51,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 110%, rgba(189,106,46,0.08), transparent 55%),
+      var(--bg);
+    padding:24px;
   }
-
-  /* ---------- Brand block (top-left, floating over the photo) ---------- */
-  .brand-mark{
-    position:fixed;
-    top:5vh; left:6vw;
-    z-index:3;
-    display:flex; align-items:center; gap:14px;
-  }
-  .brand-mark img{
-    height:46px;
-    display:block;
-    filter:drop-shadow(0 2px 10px rgba(0,0,0,.45));
-  }
-  .brand-tagline{
-    font-family:var(--font-mono);
-    font-size:11px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:var(--cream-dim);
-    border-left:1px solid var(--gold-line);
-    padding-left:14px;
-    line-height:1.5;
-  }
-
-  /* Menu-board style caption, bottom-left — grounds the design in the real
-     wood-fired-pizza-stall menu boards from the brand photography */
-  .board-caption{
-    position:fixed;
-    bottom:6vh; left:6vw;
-    z-index:3;
-    max-width:340px;
-  }
-  .board-caption .eyebrow{
-    font-family:var(--font-mono);
-    font-size:11px;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--ember);
-    margin-bottom:10px;
-    display:flex; align-items:center; gap:8px;
-  }
-  .board-caption .eyebrow::before{
-    content:"";
-    width:7px; height:7px;
-    border-radius:50%;
-    background:var(--ember);
-    box-shadow:0 0 10px 2px var(--ember);
-    display:inline-block;
-  }
-  .board-caption h1{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:clamp(22px, 2.4vw, 32px);
-    line-height:1.25;
-    color:var(--cream);
-    letter-spacing:-.01em;
-  }
-  .board-caption p{
-    margin-top:10px;
-    font-size:13px;
-    color:var(--cream-dim);
-    line-height:1.6;
-  }
-
-  /* ---------- Login card ---------- */
   .login-card{
     width:100%;
-    max-width:388px;
-    background:linear-gradient(180deg, rgba(27,18,20,0.82) 0%, rgba(20,12,13,0.90) 100%);
-    border:1px solid rgba(244,233,216,0.12);
-    border-radius:var(--radius-card);
-    padding:34px 30px 28px;
-    backdrop-filter:blur(18px) saturate(140%);
-    -webkit-backdrop-filter:blur(18px) saturate(140%);
-    box-shadow:
-      0 24px 60px rgba(0,0,0,.45),
-      0 0 0 1px rgba(0,0,0,.15);
+    max-width:400px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:40px 34px 32px;
+    box-shadow:var(--shadow-pop);
     position:relative;
     overflow:hidden;
   }
-  /* thin animated ember line along the top of the card — the signature detail */
   .login-card::before{
     content:"";
-    position:absolute; top:0; left:0; right:0; height:2px;
-    background:linear-gradient(90deg, transparent, var(--ember), var(--gold-line), var(--ember), transparent);
-    background-size:200% 100%;
-    animation:emberSweep 5s linear infinite;
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--brand), var(--accent));
   }
-  @keyframes emberSweep{
-    0%{ background-position:0% 0; }
-    100%{ background-position:200% 0; }
-  }
-
-  .login-card .card-logo{
-    display:flex; justify-content:center; margin-bottom:22px;
-  }
-  .login-card .card-logo img{
-    height:52px;
-  }
-
-  .login-card h2{
+  .login-logo{ display:flex; justify-content:center; margin-bottom:26px; }
+  .login-logo img{ height:48px; }
+  .login-card h1{
     font-family:var(--font-display);
     font-size:19px;
     font-weight:600;
     text-align:center;
-    color:var(--cream);
-    letter-spacing:-.01em;
   }
   .login-card .sub{
     text-align:center;
     font-size:12.5px;
-    color:var(--cream-dim);
-    margin-top:6px;
+    color:var(--text-muted);
+    margin-top:5px;
     margin-bottom:26px;
-    font-family:var(--font-mono);
-    letter-spacing:.02em;
   }
-
-  .field{ margin-bottom:16px; }
+  .field{ margin-bottom:16px; display:flex; flex-direction:column; gap:6px; }
   .field label{
-    display:block;
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:var(--cream-dim);
-    margin-bottom:7px;
-    font-family:var(--font-mono);
+    font-size:11.5px; font-weight:600; letter-spacing:.03em;
+    text-transform:uppercase; color:var(--text-muted);
   }
-  .field .input-wrap{
-    position:relative;
-  }
-  .field input{
+  .field .input-wrap{ position:relative; }
+  .field input, .field select, .field textarea{
     width:100%;
-    padding:13px 14px;
-    padding-right:40px;
-    background:rgba(244,233,216,0.06);
-    border:1px solid rgba(244,233,216,0.16);
-    border-radius:var(--radius-field);
-    color:var(--cream);
+    padding:12px 14px;
+    background:var(--surface-alt);
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius-sm);
+    color:var(--text);
     font-size:14.5px;
     font-family:var(--font-body);
     outline:none;
-    transition:border-color .18s ease, background .18s ease;
+    transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .field input::placeholder{ color:rgba(217,201,174,0.45); }
-  .field input:focus{
-    border-color:var(--ember);
-    background:rgba(244,233,216,0.09);
+  .field input::placeholder, .field textarea::placeholder{ color:var(--text-faint); }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    border-color:var(--brand);
+    box-shadow:0 0 0 3px rgba(122,34,51,0.10);
   }
+  .field select{ cursor:pointer; background:var(--surface-alt); }
   .field .icon-btn{
     position:absolute; right:10px; top:50%; transform:translateY(-50%);
     background:none; border:none; cursor:pointer;
-    color:var(--cream-dim);
-    font-size:12px;
+    color:var(--text-muted); font-size:11.5px; font-weight:600;
     padding:6px;
-    font-family:var(--font-mono);
-    letter-spacing:.04em;
   }
-  .field .icon-btn:hover{ color:var(--ember); }
+  .row-between{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; font-size:12.5px; }
+  .remember{ display:flex; align-items:center; gap:8px; color:var(--text-muted); }
+  .remember input{ width:15px; height:15px; accent-color:var(--brand); }
 
-  .row-between{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:22px;
-    font-size:12.5px;
-  }
-  .remember{
-    display:flex; align-items:center; gap:8px;
-    color:var(--cream-dim);
-  }
-  .remember input{
-    width:15px; height:15px;
-    accent-color:var(--ember);
-  }
-
-  .btn-primary{
-    width:100%;
-    padding:14px;
-    background:linear-gradient(180deg, var(--maroon-600), var(--maroon-700));
-    border:1px solid rgba(244,233,216,0.14);
-    color:var(--cream);
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:12px 20px;
+    border-radius:var(--radius-sm);
     font-family:var(--font-display);
     font-weight:600;
-    font-size:14.5px;
-    letter-spacing:.02em;
-    border-radius:var(--radius-field);
+    font-size:14px;
     cursor:pointer;
-    transition:transform .12s ease, box-shadow .18s ease, background .18s ease;
-    position:relative;
+    border:1px solid transparent;
+    transition:transform .08s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
   }
-  .btn-primary:hover{
-    background:linear-gradient(180deg, #9C2C3E, var(--maroon-600));
-    box-shadow:0 8px 22px rgba(226,121,58,0.22);
-  }
-  .btn-primary:active{ transform:translateY(1px); }
-  .btn-primary:disabled{ opacity:.6; cursor:not-allowed; }
+  .btn:active{ transform:translateY(1px); }
+  .btn:disabled{ opacity:.6; cursor:not-allowed; }
+  .btn-primary{ background:linear-gradient(180deg, var(--brand-light), var(--brand)); color:var(--on-brand); box-shadow:0 4px 14px rgba(122,34,51,0.22); }
+  .btn-primary:hover{ box-shadow:0 6px 18px rgba(122,34,51,0.3); }
+  .btn-block{ width:100%; }
+  .btn-ghost{ background:var(--surface-alt); border-color:var(--border-strong); color:var(--text); }
+  .btn-ghost:hover{ border-color:var(--brand); }
+  .btn-outline-danger{ background:transparent; border-color:var(--border-strong); color:var(--text-muted); }
+  .btn-outline-danger:hover{ border-color:var(--danger); color:var(--danger); }
 
-  .error-msg{
-    display:none;
-    align-items:center; gap:8px;
-    background:rgba(217,92,74,0.12);
-    border:1px solid rgba(217,92,74,0.35);
-    color:#F0B4A8;
-    font-size:12.5px;
-    padding:10px 12px;
-    border-radius:var(--radius-field);
-    margin-bottom:16px;
-  }
-  .error-msg.show{ display:flex; }
+  .form-msg{ font-size:12.5px; text-align:center; margin-top:14px; }
+  .form-msg.error{ color:var(--danger); }
+  .form-msg.success{ color:var(--success); }
 
-  .card-footer{
-    margin-top:22px;
-    text-align:center;
-    font-size:11.5px;
-    color:rgba(217,201,174,0.55);
-    font-family:var(--font-mono);
-    letter-spacing:.03em;
+  .login-footer{ text-align:center; font-size:11.5px; color:var(--text-faint); margin-top:22px; }
+
+  /* ================= APP SHELL ================= */
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:var(--sidebar-w);
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    padding:22px 14px;
+    position:fixed; top:0; bottom:0; left:0;
+    overflow-y:auto;
+    z-index:30;
+  }
+  .sidebar .brand{ display:flex; align-items:center; gap:10px; padding:6px 8px 26px; }
+  .sidebar .brand img{ height:32px; }
+
+  .nav-group{ margin-bottom:20px; }
+  .nav-group .group-label{
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--text-faint); padding:0 10px 8px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 10px;
+    border-radius:var(--radius-sm);
+    font-size:13.5px; font-weight:500;
+    color:var(--text-muted);
+    cursor:pointer;
+    margin-bottom:2px;
+    transition:background .12s ease, color .12s ease;
+  }
+  .nav-item:hover{ background:var(--surface-alt); color:var(--text); }
+  .nav-item.active{ background:var(--accent-soft); color:var(--brand); font-weight:600; }
+  .nav-item .dot{ width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.5; flex-shrink:0; }
+  .nav-item .soon-tag{
+    margin-left:auto; font-size:9.5px; font-weight:600; letter-spacing:.03em;
+    color:var(--text-faint); border:1px solid var(--border-strong); padding:2px 7px; border-radius:20px;
+  }
+  .nav-item.disabled{ cursor:default; }
+  .nav-item.disabled:hover{ background:none; color:var(--text-muted); }
+
+  .main{ flex:1; margin-left:var(--sidebar-w); display:flex; flex-direction:column; min-height:100vh; }
+
+  .topbar{
+    height:var(--topbar-h);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 30px;
+    position:sticky; top:0;
+    background:rgba(255,255,255,0.92);
+    backdrop-filter:blur(8px);
+    z-index:10;
+  }
+  .topbar h1{ font-family:var(--font-display); font-size:19px; font-weight:600; }
+  .topbar .date-line{ font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .user-block{ display:flex; align-items:center; gap:14px; }
+  .role-badge{
+    font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--brand); background:var(--accent-soft); padding:5px 12px; border-radius:20px;
+  }
+  .avatar{
+    width:36px; height:36px; border-radius:50%;
+    background:linear-gradient(160deg, var(--brand-light), var(--brand-dark));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:13.5px; color:var(--on-brand);
   }
 
-  /* slideshow progress dots, bottom-right */
-  .slide-dots{
-    position:fixed;
-    bottom:6vh; right:6vw;
-    z-index:3;
-    display:flex; gap:8px;
-  }
-  .slide-dots .dot{
-    width:22px; height:3px;
-    background:rgba(244,233,216,0.28);
-    border-radius:2px;
-    transition:background .3s ease, width .3s ease;
-  }
-  .slide-dots .dot.active{
-    background:var(--ember);
-    width:32px;
-  }
+  .content{ padding:30px 30px 40px; flex:1; }
+  .content.narrow{ max-width:640px; }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 860px){
-    .board-caption{ display:none; }
-    .page{ justify-content:center; }
+  .section-title{
+    font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--text-muted); margin:28px 0 14px;
   }
-  @media (max-width: 480px){
-    .brand-mark{ top:4vh; left:5vw; }
-    .brand-mark img{ height:38px; }
-    .brand-tagline{ display:none; }
-    .login-card{ padding:28px 22px 24px; max-width:100%; }
-    .slide-dots{ bottom:4vh; right:50%; transform:translateX(50%); }
-    .page{ padding:0 5vw; }
-  }
+  .section-title:first-child{ margin-top:0; }
+  .section-row{ display:flex; align-items:center; justify-content:space-between; margin:28px 0 14px; }
+  .section-row .section-title{ margin:0; }
 
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce){
-    .bg-slide, .ember-glow, .login-card::before{ animation:none !important; transition:none !important; }
+  /* ================= KPI CARDS ================= */
+  .kpi-grid{ display:grid; grid-template-columns:repeat(6, 1fr); gap:14px; }
+  .kpi-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:18px 18px 16px; box-shadow:var(--shadow-card);
+  }
+  .kpi-card .label{ font-size:11px; font-weight:600; letter-spacing:.03em; color:var(--text-muted); margin-bottom:10px; }
+  .kpi-card .value{ font-family:var(--font-display); font-size:24px; font-weight:700; letter-spacing:-.01em; }
+  .kpi-card .value.pending{ color:var(--text-faint); }
+
+  /* ================= QUICK ACTIONS ================= */
+  .quick-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-width:520px; }
+  .quick-btn{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:18px 12px; display:flex; flex-direction:column; align-items:center; gap:8px;
+    cursor:pointer; transition:border-color .12s ease, transform .1s ease, box-shadow .12s ease;
+  }
+  .quick-btn:hover{ border-color:var(--brand); transform:translateY(-1px); box-shadow:var(--shadow-card); }
+  .quick-btn .icon{
+    width:38px; height:38px; border-radius:10px;
+    background:linear-gradient(160deg, var(--brand-light), var(--brand-dark));
+    display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--on-brand);
+  }
+  .quick-btn .label{ font-size:12.5px; font-weight:500; text-align:center; }
+
+  /* ================= FORM CARD (Create Event / Sales / Expense) ================= */
+  .form-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:26px; box-shadow:var(--shadow-card); }
+  .form-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px 18px; }
+  .form-grid .field{ margin-bottom:0; }
+  .field.span-2{ grid-column:span 2; }
+  .field.span-3{ grid-column:span 3; }
+  .field label .req{ color:var(--danger); }
+  .field textarea{ resize:vertical; min-height:64px; }
+
+  .amount-field input{ font-size:22px; font-family:var(--font-display); font-weight:700; }
+
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+  .form-actions{ display:flex; align-items:center; gap:14px; margin-top:22px; }
+
+  /* ---------- organizer quick add ---------- */
+  .inline-row{ display:flex; gap:8px; }
+  .inline-row select{ flex:1; }
+  .icon-add-btn{
+    flex-shrink:0; width:42px; border:1px solid var(--border-strong); background:var(--surface-alt);
+    border-radius:var(--radius-sm); color:var(--text); font-size:17px; cursor:pointer; transition:border-color .12s ease;
+  }
+  .icon-add-btn:hover{ border-color:var(--brand); }
+  .quickadd{ display:none; gap:8px; margin-top:8px; }
+  .quickadd.show{ display:flex; }
+  .quickadd input{ flex:1; padding:9px 11px; background:var(--surface-alt); border:1px solid var(--border-strong); border-radius:var(--radius-sm); font-size:13px; }
+  .quickadd button{ flex-shrink:0; padding:0 14px; background:var(--brand); border:none; border-radius:var(--radius-sm); color:var(--on-brand); font-size:12px; font-weight:600; cursor:pointer; }
+
+  /* ---------- calc preview (sales) ---------- */
+  .calc-preview{ display:none; background:var(--success-soft); border:1px solid rgba(46,125,79,0.25); border-radius:var(--radius-sm); padding:12px 14px; margin:2px 0 16px; font-size:12.5px; }
+  .calc-preview.show{ display:block; }
+  .calc-preview .row{ display:flex; justify-content:space-between; margin-bottom:3px; }
+  .calc-preview .row:last-child{ margin-bottom:0; font-weight:700; color:var(--success); }
+  .calc-preview .row span:first-child{ color:var(--text-muted); }
+
+  /* ---------- receipt capture (expenses) ---------- */
+  .receipt-zone{
+    border:1.5px dashed var(--border-strong); border-radius:var(--radius-md); padding:18px;
+    text-align:center; cursor:pointer; position:relative; transition:border-color .12s ease, background .12s ease;
+  }
+  .receipt-zone:hover{ border-color:var(--brand); background:var(--accent-soft); }
+  .receipt-zone .icon{ font-size:22px; margin-bottom:6px; }
+  .receipt-zone .label{ font-size:12.5px; color:var(--text-muted); }
+  .receipt-zone .sublabel{ font-size:10.5px; color:var(--text-faint); margin-top:3px; }
+  .receipt-zone input[type=file]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .receipt-preview{ display:none; align-items:center; gap:12px; padding:10px; background:var(--surface-alt); border:1px solid var(--border); border-radius:var(--radius-md); }
+  .receipt-preview.show{ display:flex; }
+  .receipt-preview img{ width:48px; height:48px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
+  .receipt-preview .info{ flex:1; font-size:12px; color:var(--text-muted); }
+  .receipt-preview .remove-btn{ background:none; border:1px solid var(--border-strong); color:var(--danger); font-size:11px; padding:5px 10px; border-radius:var(--radius-sm); cursor:pointer; }
+
+  /* ================= EVENTS: TABS + LIST ================= */
+  .filter-tabs{ display:flex; gap:8px; margin-bottom:18px; }
+  .filter-tab{
+    padding:8px 16px; border-radius:20px; font-size:12.5px; font-weight:600;
+    border:1px solid var(--border-strong); color:var(--text-muted); cursor:pointer; transition:all .12s ease;
+  }
+  .filter-tab:hover{ border-color:var(--brand); color:var(--text); }
+  .filter-tab.active{ background:var(--brand); border-color:var(--brand); color:var(--on-brand); }
+
+  .events-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
+  .event-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:18px; cursor:pointer; transition:border-color .12s ease, transform .1s ease; box-shadow:var(--shadow-card);
+  }
+  .event-card:hover{ border-color:var(--brand); transform:translateY(-1px); }
+  .event-card .top-row{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+  .event-card .event-id{ font-family:var(--font-mono); font-size:10px; color:var(--text-faint); }
+  .status-pill{ font-size:9.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:3px 9px; border-radius:20px; border:1px solid; }
+  .status-planned{ color:var(--text-muted); border-color:var(--border-strong); }
+  .status-upcoming{ color:var(--warning); border-color:rgba(166,118,36,0.35); background:var(--warning-soft); }
+  .status-active{ color:var(--success); border-color:rgba(46,125,79,0.35); background:var(--success-soft); }
+  .status-completed{ color:var(--text-muted); border-color:var(--border-strong); }
+  .status-cancelled{ color:var(--danger); border-color:rgba(178,58,46,0.3); background:var(--danger-soft); }
+  .event-card h3{ font-family:var(--font-display); font-size:15px; margin-bottom:6px; }
+  .event-card .meta{ font-size:12px; color:var(--text-muted); display:flex; flex-direction:column; gap:4px; }
+
+  /* ================= RECENT ROWS (sales / expenses) ================= */
+  .row-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:9px; box-shadow:var(--shadow-card); }
+  .row-card .top-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px; }
+  .row-card .primary{ font-family:var(--font-display); font-size:14px; font-weight:600; }
+  .row-card .amount{ font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--brand); }
+  .row-card .meta{ font-size:11.5px; color:var(--text-muted); display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .receipt-link{ color:var(--accent); border:1px solid rgba(189,106,46,0.3); padding:2px 8px; border-radius:20px; font-size:10.5px; }
+
+  /* ================= EMPTY / LOADING STATES ================= */
+  .empty-card{ background:var(--surface); border:1px dashed var(--border-strong); border-radius:var(--radius-md); padding:36px 20px; text-align:center; }
+  .empty-card .icon{ font-size:28px; margin-bottom:10px; opacity:.55; }
+  .empty-card h3{ font-family:var(--font-display); font-size:15px; margin-bottom:6px; }
+  .empty-card p{ font-size:12.5px; color:var(--text-muted); max-width:380px; margin:0 auto; line-height:1.6; }
+  .empty-card a.cta{ display:inline-block; margin-top:14px; font-size:12px; font-weight:600; color:var(--brand); border:1px solid var(--brand); padding:8px 16px; border-radius:20px; cursor:pointer; }
+  .empty-card a.cta:hover{ background:var(--accent-soft); }
+  .loading-line{ background:var(--surface); border:1px dashed var(--border-strong); border-radius:var(--radius-md); padding:24px; text-align:center; font-size:12.5px; color:var(--text-muted); }
+
+  /* ================= TOAST ================= */
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(10px);
+    background:var(--text); color:var(--on-brand); font-size:12.5px; padding:11px 18px; border-radius:var(--radius-sm);
+    box-shadow:var(--shadow-pop); opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:100; max-width:82vw; text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ================= VIEWS ================= */
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ================= AUTH CHECK SPLASH ================= */
+  #authCheck{ position:fixed; inset:0; z-index:999; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:13px; }
+
+  /* ================= MOBILE ================= */
+  .bottom-nav{ display:none; }
+
+  @media (max-width: 980px){
+    .kpi-grid{ grid-template-columns:repeat(3, 1fr); }
+    .form-grid{ grid-template-columns:repeat(2, 1fr); }
+    .field.span-2{ grid-column:span 2; }
+    .field.span-3{ grid-column:span 2; }
+  }
+  @media (max-width: 720px){
+    .sidebar{ display:none; }
+    .main{ margin-left:0; padding-bottom:var(--bottomnav-h); }
+    .content{ padding:18px 16px 8px; }
+    .topbar{ padding:0 16px; height:60px; }
+    .topbar h1{ font-size:16px; }
+    .kpi-grid{ grid-template-columns:repeat(2, 1fr); gap:10px; }
+    .quick-grid{ grid-template-columns:repeat(3, 1fr); max-width:100%; }
+    .form-grid{ grid-template-columns:1fr; }
+    .field.span-2, .field.span-3{ grid-column:span 1; }
+
+    .bottom-nav{
+      display:flex; position:fixed; bottom:0; left:0; right:0; height:var(--bottomnav-h);
+      background:rgba(255,255,255,0.97); backdrop-filter:blur(10px); border-top:1px solid var(--border);
+      z-index:20; padding-bottom:env(safe-area-inset-bottom);
+    }
+    .bottom-nav .bn-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:9.5px; color:var(--text-muted); cursor:pointer; }
+    .bottom-nav .bn-item.active{ color:var(--brand); font-weight:600; }
+    .bottom-nav .bn-icon{ font-size:17px; }
   }
 </style>
 </head>
 <body>
 
-  <!-- Background photo slideshow -->
-  <div class="bg-slideshow" id="bgSlideshow">
-    <div class="bg-slide active" style="background-image:url('assets/img/slide-1.jpg')"></div>
-    <div class="bg-slide" style="background-image:url('assets/img/slide-2.jpg')"></div>
-    <div class="bg-slide" style="background-image:url('assets/img/slide-3.jpg')"></div>
-  </div>
-  <div class="bg-overlay"></div>
-  <div class="ember-glow"></div>
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <form class="login-card" id="loginForm" autocomplete="off" novalidate>
+    <div class="login-logo"><img src="assets/img/logo.png" alt="Slice45 Kitchen"></div>
+    <h1>Sign in to your workspace</h1>
+    <div class="sub">Slice45 Kitchen — Internal Access</div>
 
-  <!-- Brand mark, top-left -->
-  <div class="brand-mark">
-    <img src="assets/img/logo.png" alt="Slice45 Kitchen">
-    <span class="brand-tagline">Event &amp; Catering<br>Operations Platform</span>
-  </div>
+    <div class="form-msg error" id="loginError" style="display:none; background:var(--danger-soft); border:1px solid rgba(178,58,46,0.25); border-radius:8px; padding:10px; margin-bottom:16px;"></div>
 
-  <!-- Menu-board style caption, bottom-left (hidden on small screens) -->
-  <div class="board-caption">
-    <div class="eyebrow">Live Across UAE Events</div>
-    <h1>One place for every event, every order, every dirham.</h1>
-    <p>Sales, expenses, staff and documents — logged once, reported everywhere.</p>
-  </div>
-
-  <!-- Slideshow progress dots -->
-  <div class="slide-dots" id="slideDots">
-    <div class="dot active"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-
-  <!-- Login card -->
-  <div class="page">
-    <form class="login-card" id="loginForm" autocomplete="off" novalidate>
-      <div class="card-logo">
-        <img src="assets/img/logo.png" alt="Slice45 Kitchen">
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="e.g. admin" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label>Password / PIN</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="button" class="icon-btn" id="togglePw">SHOW</button>
       </div>
-      <h2>Sign in to your workspace</h2>
-      <div class="sub">SLICE45 KITCHEN &middot; INTERNAL ACCESS</div>
+    </div>
 
-      <div class="error-msg" id="errorMsg">
-        <span>&#9888;</span>
-        <span id="errorText">Incorrect username or password.</span>
+    <div class="row-between">
+      <label class="remember"><input type="checkbox" id="rememberMe"> Keep me signed in</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign In</button>
+    <div class="login-footer">Default PIN is 0000 — you'll set your own after signing in.</div>
+  </form>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="authCheck" style="display:none;">Checking your session…</div>
+
+<div class="app" id="appShell" style="display:none;">
+
+  <nav class="sidebar">
+    <div class="brand"><img src="assets/img/logo.png" alt="Slice45 Kitchen"></div>
+
+    <div class="nav-group">
+      <div class="nav-item" data-view="dashboard"><span class="dot"></span> Dashboard</div>
+    </div>
+    <div class="nav-group">
+      <div class="group-label">Operations</div>
+      <div class="nav-item" data-view="events"><span class="dot"></span> Events</div>
+      <div class="nav-item" data-view="sales"><span class="dot"></span> Daily Sales</div>
+      <div class="nav-item" data-view="expenses"><span class="dot"></span> Expenses</div>
+      <div class="nav-item disabled" data-soon="Staff module"><span class="dot"></span> Staff <span class="soon-tag">Soon</span></div>
+      <div class="nav-item disabled" data-soon="Catering module"><span class="dot"></span> Catering <span class="soon-tag">Soon</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="group-label">Reports</div>
+      <div class="nav-item disabled" data-soon="Reports Centre"><span class="dot"></span> Reports <span class="soon-tag">Soon</span></div>
+      <div class="nav-item disabled" data-soon="Documents"><span class="dot"></span> Documents <span class="soon-tag">Soon</span></div>
+    </div>
+    <div class="nav-group" style="margin-top:auto;">
+      <div class="nav-item disabled" data-soon="Settings"><span class="dot"></span> Settings <span class="soon-tag">Soon</span></div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="date-line" id="dateText"></div>
       </div>
+      <div class="user-block">
+        <span class="role-badge" id="roleBadge">ROLE</span>
+        <div class="avatar" id="avatarInitial">?</div>
+        <button class="btn btn-outline-danger" id="signOutBtn" style="padding:9px 15px; font-size:12.5px;">Sign Out</button>
+      </div>
+    </header>
 
-      <div class="field">
-        <label for="username">Username</label>
-        <div class="input-wrap">
-          <input type="text" id="username" name="username" placeholder="e.g. ahmed" autocomplete="username" required>
+    <div class="content">
+
+      <!-- ---------- DASHBOARD VIEW ---------- -->
+      <section class="view" id="view-dashboard">
+        <div class="section-title">Overview</div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="label">Total Events</div><div class="value pending" id="kpiTotalEvents">—</div></div>
+          <div class="kpi-card"><div class="label">Active Events</div><div class="value pending" id="kpiActiveEvents">—</div></div>
+          <div class="kpi-card"><div class="label">Total Revenue</div><div class="value pending" id="kpiRevenue">—</div></div>
+          <div class="kpi-card"><div class="label">Total Expenses</div><div class="value pending" id="kpiExpenses">—</div></div>
+          <div class="kpi-card"><div class="label">Net Profit</div><div class="value pending" id="kpiProfit">—</div></div>
+          <div class="kpi-card"><div class="label">Profit Margin</div><div class="value pending" id="kpiMargin">—</div></div>
         </div>
-      </div>
 
-      <div class="field">
-        <label for="password">Password / PIN</label>
-        <div class="input-wrap">
-          <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
-          <button type="button" class="icon-btn" id="togglePw">SHOW</button>
+        <div class="section-title">Quick Actions</div>
+        <div class="quick-grid">
+          <div class="quick-btn" data-goto="sales"><div class="icon">＋</div><div class="label">Daily Sales</div></div>
+          <div class="quick-btn" data-goto="expenses"><div class="icon">＋</div><div class="label">Expense</div></div>
+          <div class="quick-btn" data-goto="events"><div class="icon">🎪</div><div class="label">New Event</div></div>
         </div>
-      </div>
 
-      <div class="row-between">
-        <label class="remember">
-          <input type="checkbox" id="rememberMe">
-          Keep me signed in
-        </label>
-      </div>
+        <div class="section-title">My Events</div>
+        <div id="myEventsWrap"><div class="loading-line">Loading…</div></div>
+      </section>
 
-      <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
+      <!-- ---------- EVENTS VIEW ---------- -->
+      <section class="view" id="view-events">
+        <div class="section-title">Create Event</div>
+        <div class="form-card">
+          <form id="eventForm">
+            <div class="form-grid">
+              <div class="field span-2">
+                <label>Event Name <span class="req">*</span></label>
+                <input type="text" id="eventName" placeholder="e.g. Ethara — Saadiyat Nights" required>
+              </div>
+              <div class="field">
+                <label>Event Type <span class="req">*</span></label>
+                <select id="eventType" required><option value="">Select…</option></select>
+              </div>
 
-      <div class="card-footer">
-        New here? Default PIN is <strong style="color:var(--cream)">0000</strong> — you'll set your own after signing in.
-      </div>
-    </form>
+              <div class="field span-2">
+                <label>Organizer</label>
+                <div class="inline-row">
+                  <select id="organizerId"><option value="">— No organizer / Direct catering —</option></select>
+                  <button type="button" class="icon-add-btn" id="toggleOrgAdd" title="Add new organizer">＋</button>
+                </div>
+                <div class="quickadd" id="orgQuickAdd">
+                  <input type="text" id="newOrgName" placeholder="New organizer name">
+                  <button type="button" id="saveOrgBtn">Save</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select id="eventStatus"><option value="">Select…</option></select>
+              </div>
 
-    <!-- Shown after a successful login. Dashboard build comes in the next step —
-         for now this just proves the backend connection works end-to-end. -->
-    <div class="login-card" id="successPanel" style="display:none;">
-      <div class="card-logo">
-        <img src="assets/img/logo.png" alt="Slice45 Kitchen">
-      </div>
-      <h2 id="welcomeText">Welcome back</h2>
-      <div class="sub" id="roleText">SLICE45 KITCHEN</div>
-      <div style="background:rgba(78,154,99,0.12); border:1px solid rgba(78,154,99,0.35); color:#B6E0BE; font-size:12.5px; padding:12px; border-radius:10px; margin:18px 0; text-align:center;">
-        &#10003; Signed in successfully. Backend connection confirmed.
-      </div>
-      <div class="card-footer" style="margin-bottom:16px;">
-        Dashboard build is next — this screen is a temporary placeholder.
-      </div>
-      <button type="button" class="btn-primary" id="signOutBtn">Sign Out</button>
+              <div class="field">
+                <label>Start Date <span class="req">*</span></label>
+                <input type="date" id="startDate" required>
+              </div>
+              <div class="field">
+                <label>End Date</label>
+                <input type="date" id="endDate">
+              </div>
+              <div class="field">
+                <label>Expected Sales (AED)</label>
+                <input type="number" id="expectedSales" placeholder="0" min="0">
+              </div>
+
+              <div class="field">
+                <label>Location</label>
+                <input type="text" id="location" placeholder="e.g. Saadiyat Island">
+              </div>
+              <div class="field">
+                <label>Venue</label>
+                <input type="text" id="venue" placeholder="e.g. Saadiyat Beach">
+              </div>
+              <div class="field">
+                <label>Brand</label>
+                <input type="text" id="brand" placeholder="e.g. Slice45">
+              </div>
+
+              <div class="field">
+                <label>POS Type</label>
+                <select id="posType"><option value="">Select…</option></select>
+              </div>
+              <div class="field">
+                <label>Commercial Model</label>
+                <select id="commercialModel"><option value="">Select…</option></select>
+              </div>
+              <div class="field">
+                <label>Agreement Number</label>
+                <input type="text" id="agreementNumber" placeholder="Optional">
+              </div>
+
+              <div class="field span-3">
+                <label>Notes</label>
+                <textarea id="eventNotes" placeholder="Anything worth noting about this event…"></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="createEventBtn">Create Event</button>
+              <span class="form-msg" id="eventFormMsg"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="section-row">
+          <div class="section-title">Events</div>
+          <div class="filter-tabs">
+            <div class="filter-tab active" data-filter="">All</div>
+            <div class="filter-tab" data-filter="Upcoming">Upcoming</div>
+            <div class="filter-tab" data-filter="Active">Active</div>
+          </div>
+        </div>
+        <div id="eventsListWrap"><div class="loading-line">Loading…</div></div>
+      </section>
+
+      <!-- ---------- DAILY SALES VIEW ---------- -->
+      <section class="view" id="view-sales">
+        <div class="content narrow" style="padding:0;">
+          <div class="form-card">
+            <form id="salesForm">
+              <div class="field">
+                <label>Event <span class="req">*</span></label>
+                <select id="saleEventId" required><option value="">Select an event…</option></select>
+              </div>
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field" style="margin-bottom:0;">
+                  <label>Date <span class="req">*</span></label>
+                  <input type="date" id="saleDate" required>
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label>POS</label>
+                  <select id="salePosType"><option value="">Select…</option></select>
+                </div>
+              </div>
+              <div class="field amount-field">
+                <label>Gross Sales (AED) <span class="req">*</span></label>
+                <input type="number" id="grossSales" placeholder="0.00" min="0" step="0.01" required inputmode="decimal">
+              </div>
+              <div class="calc-preview" id="calcPreview">
+                <div class="row"><span>VAT (auto)</span><span id="calcVat">AED 0.00</span></div>
+                <div class="row"><span>Net Sales</span><span id="calcNet">AED 0.00</span></div>
+              </div>
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field" style="margin-bottom:0;">
+                  <label>Cash</label>
+                  <input type="number" id="saleCash" placeholder="Optional" min="0" step="0.01" inputmode="decimal">
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label>Card</label>
+                  <input type="number" id="saleCard" placeholder="Optional" min="0" step="0.01" inputmode="decimal">
+                </div>
+              </div>
+              <div class="field">
+                <label>Notes</label>
+                <textarea id="saleNotes" placeholder="e.g. Normal day, rained in the evening…"></textarea>
+              </div>
+              <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+                <button type="submit" class="btn btn-primary btn-block" id="saveSaleBtn">Save Daily Sale</button>
+                <span class="form-msg" id="salesFormMsg"></span>
+              </div>
+            </form>
+          </div>
+
+          <div class="section-title">Recent Entries</div>
+          <div id="recentSalesWrap"><div class="loading-line">Loading…</div></div>
+        </div>
+      </section>
+
+      <!-- ---------- EXPENSES VIEW ---------- -->
+      <section class="view" id="view-expenses">
+        <div class="content narrow" style="padding:0;">
+          <div class="form-card">
+            <form id="expenseForm">
+              <div class="field">
+                <label>Event <span class="req">*</span></label>
+                <select id="expEventId" required><option value="">Select an event…</option></select>
+              </div>
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field" style="margin-bottom:0;">
+                  <label>Date <span class="req">*</span></label>
+                  <input type="date" id="expenseDate" required>
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label>Category <span class="req">*</span></label>
+                  <select id="category" required><option value="">Select…</option></select>
+                </div>
+              </div>
+              <div class="field amount-field">
+                <label>Amount (AED) <span class="req">*</span></label>
+                <input type="number" id="amount" placeholder="0.00" min="0" step="0.01" required inputmode="decimal">
+              </div>
+              <div class="field">
+                <label>Description</label>
+                <input type="text" id="description" placeholder="e.g. Ice for beverage station">
+              </div>
+              <div class="field-row" style="margin-bottom:16px;">
+                <div class="field" style="margin-bottom:0;">
+                  <label>Paid To</label>
+                  <input type="text" id="paidTo" placeholder="Vendor / supplier">
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label>Payment Method</label>
+                  <select id="paymentMethod"><option value="">Select…</option></select>
+                </div>
+              </div>
+              <div class="field">
+                <label>Reference</label>
+                <input type="text" id="reference" placeholder="Receipt/invoice number — optional">
+              </div>
+              <div class="field">
+                <label>Receipt Photo</label>
+                <div class="receipt-zone" id="receiptZone">
+                  <div class="icon">📷</div>
+                  <div class="label">Tap to take a photo or choose a file</div>
+                  <div class="sublabel">Optional — JPG, PNG</div>
+                  <input type="file" id="receiptInput" accept="image/*" capture="environment">
+                </div>
+                <div class="receipt-preview" id="receiptPreview">
+                  <img id="receiptThumb" src="" alt="Receipt preview">
+                  <div class="info" id="receiptInfo"></div>
+                  <button type="button" class="remove-btn" id="removeReceiptBtn">Remove</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Notes</label>
+                <textarea id="expenseNotes" placeholder="Anything worth noting…"></textarea>
+              </div>
+              <div class="form-actions" style="flex-direction:column; align-items:stretch;">
+                <button type="submit" class="btn btn-primary btn-block" id="saveExpenseBtn">Save Expense</button>
+                <span class="form-msg" id="expenseFormMsg"></span>
+              </div>
+            </form>
+          </div>
+
+          <div class="section-title">Recent Entries</div>
+          <div id="recentExpensesWrap"><div class="loading-line">Loading…</div></div>
+        </div>
+      </section>
+
     </div>
   </div>
 
+  <nav class="bottom-nav">
+    <div class="bn-item" data-view="dashboard"><div class="bn-icon">▦</div>Dashboard</div>
+    <div class="bn-item" data-view="events"><div class="bn-icon">🎪</div>Events</div>
+    <div class="bn-item" data-view="sales"><div class="bn-icon">💰</div>Sales</div>
+    <div class="bn-item" data-view="expenses"><div class="bn-icon">🧾</div>Expenses</div>
+  </nav>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-  /* =========================================================
-     BACKGROUND SLIDESHOW
-     ========================================================= */
-  (function(){
-    const slides = document.querySelectorAll('.bg-slide');
-    const dots   = document.querySelectorAll('.slide-dots .dot');
-    let current = 0;
-    setInterval(() => {
-      slides[current].classList.remove('active');
-      dots[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
-      dots[current].classList.add('active');
-    }, 6000);
-  })();
+/* ============================================================
+   CONFIG — set this once
+   ============================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwywZWkaOn6nmhpJf5iluWz7evABqcC4v10cpvI2Px_9QHeVhBhsSfQrQ3S12eM7F6jbQ/exec';
 
-  /* =========================================================
-     SHOW / HIDE PASSWORD
-     ========================================================= */
-  document.getElementById('togglePw').addEventListener('click', function(){
-    const pw = document.getElementById('password');
-    const showing = pw.type === 'text';
-    pw.type = showing ? 'password' : 'text';
-    this.textContent = showing ? 'SHOW' : 'HIDE';
+/* ============================================================
+   SESSION HELPERS
+   ============================================================ */
+function getStoredSession(){
+  const token = localStorage.getItem('slice45_token') || sessionStorage.getItem('slice45_token');
+  const userRaw = localStorage.getItem('slice45_user') || sessionStorage.getItem('slice45_user');
+  if (!token || !userRaw) return null;
+  return { token, user: JSON.parse(userRaw) };
+}
+function clearSession(){
+  ['slice45_token','slice45_user'].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
+}
+async function api(action, data){
+  const session = getStoredSession();
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action, token: session ? session.token : null }, data || {}))
   });
+  return res.json();
+}
 
-  /* =========================================================
-     LOGIN SUBMIT
-     This is the ONLY place that needs to change once the
-     Apps Script backend is ready. Replace the mock block
-     inside handleLogin() with the real fetch() call.
-     ========================================================= */
+/* ============================================================
+   TOAST
+   ============================================================ */
+const toastEl = document.getElementById('toast');
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
 
-  // PASTE your Apps Script Web App URL here (ends in /exec)
-  const API_URL = 'https://script.google.com/macros/s/AKfycbwywZWkaOn6nmhpJf5iluWz7evABqcC4v10cpvI2Px_9QHeVhBhsSfQrQ3S12eM7F6jbQ/exec';
-
-  const form         = document.getElementById('loginForm');
-  const errorBox     = document.getElementById('errorMsg');
-  const errorText    = document.getElementById('errorText');
-  const loginBtn     = document.getElementById('loginBtn');
-  const successPanel = document.getElementById('successPanel');
-  const welcomeText  = document.getElementById('welcomeText');
-  const roleText     = document.getElementById('roleText');
-  const signOutBtn   = document.getElementById('signOutBtn');
-
-  // If a valid session is already saved, skip straight to the success panel
-  (function checkExistingSession(){
-    const token = localStorage.getItem('slice45_token') || sessionStorage.getItem('slice45_token');
-    const userRaw = localStorage.getItem('slice45_user') || sessionStorage.getItem('slice45_user');
-    if (token && userRaw) {
-      const user = JSON.parse(userRaw);
-      showSuccess(user);
-    }
-  })();
-
-  signOutBtn.addEventListener('click', function(){
-    localStorage.removeItem('slice45_token');
-    localStorage.removeItem('slice45_user');
-    sessionStorage.removeItem('slice45_token');
-    sessionStorage.removeItem('slice45_user');
-    successPanel.style.display = 'none';
-    form.style.display = 'block';
-    form.reset();
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+function fmtCurrency(n){
+  const val = Number(n) || 0;
+  return 'AED ' + val.toLocaleString('en-AE', { maximumFractionDigits: 0 });
+}
+function formatDateRange(start, end){
+  if (!start) return '—';
+  const s = new Date(start).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' });
+  if (!end) return s;
+  const e = new Date(end).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' });
+  return s + ' – ' + e;
+}
+function fillSelect(id, options){
+  const sel = document.getElementById(id);
+  const existing = new Set(Array.from(sel.options).map(o => o.value));
+  (options || []).forEach(opt => {
+    if (existing.has(opt)) return;
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    sel.appendChild(o);
   });
+}
 
-  function showSuccess(user){
-    form.style.display = 'none';
-    successPanel.style.display = 'block';
-    welcomeText.textContent = 'Welcome, ' + user.name;
-    roleText.textContent = 'SLICE45 KITCHEN · ' + user.role.toUpperCase();
+/* ============================================================
+   LOGIN
+   ============================================================ */
+const loginScreen = document.getElementById('loginScreen');
+const authCheck = document.getElementById('authCheck');
+const appShell = document.getElementById('appShell');
+
+document.getElementById('togglePw').addEventListener('click', function(){
+  const pw = document.getElementById('password');
+  const showing = pw.type === 'text';
+  pw.type = showing ? 'password' : 'text';
+  this.textContent = showing ? 'SHOW' : 'HIDE';
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorBox = document.getElementById('loginError');
+  errorBox.style.display = 'none';
+
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const remember = document.getElementById('rememberMe').checked;
+  const btn = document.getElementById('loginBtn');
+
+  if (!username || !password){
+    errorBox.textContent = 'Please enter both username and password.';
+    errorBox.style.display = 'block';
+    return;
   }
 
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    handleLogin();
-  });
+  btn.disabled = true; btn.textContent = 'Signing in…';
 
-  function showError(msg){
-    errorText.textContent = msg;
-    errorBox.classList.add('show');
-  }
-  function hideError(){
-    errorBox.classList.remove('show');
-  }
+  try{
+    const data = await api('login', { username, password });
+    btn.disabled = false; btn.textContent = 'Sign In';
 
-  async function handleLogin(){
-    hideError();
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-    const remember = document.getElementById('rememberMe').checked;
-
-    if(!username || !password){
-      showError('Please enter both username and password.');
+    if (!data.success){
+      errorBox.textContent = data.message || 'Incorrect username or password.';
+      errorBox.style.display = 'block';
       return;
     }
 
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Signing in...';
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem('slice45_token', data.token);
+    storage.setItem('slice45_user', JSON.stringify(data.user));
 
-    try{
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
-        body: JSON.stringify({ action: 'login', username, password })
-      });
-      const data = await res.json();
+    bootApp(data.user);
 
-      if(!data.success){
-        showError(data.message || 'Incorrect username or password.');
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Sign In';
-        return;
-      }
-
-      // Save session (localStorage if "keep me signed in", else sessionStorage)
-      const storage = remember ? localStorage : sessionStorage;
-      storage.setItem('slice45_token', data.token);
-      storage.setItem('slice45_user', JSON.stringify(data.user));
-
-      // NOTE: change-password.html doesn't exist yet — once it does,
-      // swap the line below for the mustChangePassword branch.
-      window.location.href = 'dashboard.html';
-
-    }catch(err){
-      showError('Could not reach the server. Please check your connection.');
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Sign In';
-    }
+  }catch(err){
+    btn.disabled = false; btn.textContent = 'Sign In';
+    errorBox.textContent = 'Could not reach the server. Please check your connection.';
+    errorBox.style.display = 'block';
   }
+});
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  const session = getStoredSession();
+  clearSession();
+  if (session){ try{ await api('logout', {}); }catch(e){} }
+  location.reload();
+});
+
+/* ============================================================
+   BOOT SEQUENCE
+   ============================================================ */
+(async function init(){
+  const session = getStoredSession();
+  if (!session){
+    loginScreen.style.display = 'flex';
+    return;
+  }
+
+  loginScreen.style.display = 'none';
+  authCheck.style.display = 'flex';
+
+  try{
+    const check = await api('checkSession', {});
+    if (!check.success){
+      clearSession();
+      authCheck.style.display = 'none';
+      loginScreen.style.display = 'flex';
+      return;
+    }
+    bootApp(session.user);
+  }catch(err){
+    authCheck.style.display = 'none';
+    loginScreen.style.display = 'flex';
+  }
+})();
+
+function bootApp(user){
+  loginScreen.style.display = 'none';
+  authCheck.style.display = 'none';
+  appShell.style.display = 'flex';
+
+  document.getElementById('roleBadge').textContent = user.role;
+  document.getElementById('avatarInitial').textContent = (user.name || '?').charAt(0).toUpperCase();
+  document.getElementById('dateText').textContent = new Date().toLocaleDateString('en-AE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  document.getElementById('saleDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('expenseDate').value = new Date().toISOString().slice(0, 10);
+
+  wireGlobalNav();
+  wireEventsView();
+  wireSalesView();
+  wireExpensesView();
+
+  loadDropdownLists();
+  navigate('dashboard');
+}
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+let CURRENT_VIEW = 'dashboard';
+
+function wireGlobalNav(){
+  document.querySelectorAll('.nav-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.view));
+  });
+  document.querySelectorAll('.bn-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.view));
+  });
+  document.querySelectorAll('.nav-item[data-soon]').forEach(el => {
+    el.addEventListener('click', () => showToast(el.dataset.soon + ' — coming in a future step.'));
+  });
+  document.querySelectorAll('[data-goto]').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.goto));
+  });
+}
+
+const VIEW_TITLES = { dashboard:'Dashboard', events:'Events', sales:'Daily Sales', expenses:'Expenses' };
+
+function navigate(view){
+  CURRENT_VIEW = view;
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+
+  document.querySelectorAll('.nav-item[data-view]').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  document.querySelectorAll('.bn-item[data-view]').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+
+  document.getElementById('pageTitle').textContent = VIEW_TITLES[view] || 'Slice45 Kitchen';
+
+  if (view === 'dashboard'){ loadDashboard(); }
+  if (view === 'events'){ loadOrganizers(); loadEvents(); }
+  if (view === 'sales'){ loadEventsIntoSelect('saleEventId'); loadRecentSales(); }
+  if (view === 'expenses'){ loadEventsIntoSelect('expEventId'); loadRecentExpenses(); }
+}
+
+/* ============================================================
+   SHARED: DROPDOWN LISTS (Event Types, POS, etc.)
+   ============================================================ */
+async function loadDropdownLists(){
+  try{
+    const data = await api('getDropdownLists', {});
+    if (!data.success) return;
+    fillSelect('eventType', data.lists.eventTypes);
+    fillSelect('posType', data.lists.posTypes);
+    fillSelect('commercialModel', data.lists.commercialModels);
+    fillSelect('eventStatus', data.lists.eventStatuses);
+    fillSelect('salePosType', data.lists.posTypes);
+    fillSelect('category', data.lists.expenseCategories);
+    fillSelect('paymentMethod', data.lists.paymentMethods);
+    document.getElementById('eventStatus').value = 'Planned';
+  }catch(err){ /* non-critical */ }
+}
+
+/* Cached events list, shared across Dashboard/Events/Sales/Expenses to avoid refetching constantly */
+let EVENTS_CACHE = null;
+async function getEventsCached(forceRefresh){
+  if (EVENTS_CACHE && !forceRefresh) return EVENTS_CACHE;
+  const data = await api('listEvents', {});
+  if (data.success){ EVENTS_CACHE = data.events; }
+  return EVENTS_CACHE || [];
+}
+
+async function loadEventsIntoSelect(selectId){
+  const events = await getEventsCached();
+  const sel = document.getElementById(selectId);
+  const current = sel.value;
+  sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+  events.forEach(ev => {
+    const o = document.createElement('option');
+    o.value = ev.EventID;
+    o.textContent = ev.EventID + ' — ' + ev.EventName;
+    sel.appendChild(o);
+  });
+  if (current) sel.value = current;
+  if (!events.length){ showToast('No events yet — create one on the Events page first.'); }
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+async function loadDashboard(){
+  try{
+    const data = await api('getDashboardSummary', {});
+    if (!data.success){ showToast(data.message || 'Could not load dashboard data.'); return; }
+    const k = data.kpis;
+    setKpi('kpiTotalEvents', k.totalEvents);
+    setKpi('kpiActiveEvents', k.activeEvents);
+    setKpi('kpiRevenue', fmtCurrency(k.totalRevenue));
+    setKpi('kpiExpenses', fmtCurrency(k.totalExpenses));
+    setKpi('kpiProfit', fmtCurrency(k.netProfit));
+    setKpi('kpiMargin', k.profitMargin + '%');
+  }catch(err){ showToast('Could not reach the server for dashboard data.'); }
+
+  const wrap = document.getElementById('myEventsWrap');
+  try{
+    const events = await getEventsCached(true);
+    if (!events.length){
+      wrap.innerHTML = `
+        <div class="empty-card">
+          <div class="icon">🎪</div>
+          <h3>No events yet</h3>
+          <p>Create your first event and it'll show up here as a card.</p>
+          <a class="cta" data-goto="events">+ Create Event</a>
+        </div>`;
+      wrap.querySelector('[data-goto]').addEventListener('click', () => navigate('events'));
+      return;
+    }
+    wrap.innerHTML = '<div class="events-grid">' + events.slice(0, 6).map(renderEventCard).join('') + '</div>';
+    wrap.querySelectorAll('.event-card').forEach(el => el.addEventListener('click', () => navigate('events')));
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card"><div class="icon">⚠</div><h3>Could not load events</h3><p>Check your connection and try again.</p></div>';
+  }
+}
+function setKpi(id, value){
+  const el = document.getElementById(id);
+  el.textContent = value;
+  el.classList.remove('pending');
+}
+
+/* ============================================================
+   EVENTS VIEW
+   ============================================================ */
+let EVENTS_FILTER = '';
+
+function wireEventsView(){
+  document.getElementById('toggleOrgAdd').addEventListener('click', () => {
+    document.getElementById('orgQuickAdd').classList.toggle('show');
+  });
+
+  document.getElementById('saveOrgBtn').addEventListener('click', async () => {
+    const input = document.getElementById('newOrgName');
+    const name = input.value.trim();
+    if (!name){ showToast('Enter an organizer name first.'); return; }
+    const data = await api('createOrganizer', { organizerName: name }).catch(() => null);
+    if (!data || !data.success){ showToast((data && data.message) || 'Could not add organizer.'); return; }
+    await loadOrganizers(data.organizerId);
+    input.value = '';
+    document.getElementById('orgQuickAdd').classList.remove('show');
+    showToast('Organizer added: ' + data.organizerName);
+  });
+
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      EVENTS_FILTER = tab.dataset.filter;
+      renderEventsList();
+    });
+  });
+
+  document.getElementById('eventForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('eventFormMsg');
+    const btn = document.getElementById('createEventBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      eventName: document.getElementById('eventName').value.trim(),
+      eventType: document.getElementById('eventType').value,
+      organizerId: document.getElementById('organizerId').value,
+      status: document.getElementById('eventStatus').value,
+      startDate: document.getElementById('startDate').value,
+      endDate: document.getElementById('endDate').value,
+      expectedSales: document.getElementById('expectedSales').value,
+      location: document.getElementById('location').value.trim(),
+      venue: document.getElementById('venue').value.trim(),
+      brand: document.getElementById('brand').value.trim(),
+      posType: document.getElementById('posType').value,
+      commercialModel: document.getElementById('commercialModel').value,
+      agreementNumber: document.getElementById('agreementNumber').value.trim(),
+      notes: document.getElementById('eventNotes').value.trim()
+    };
+
+    if (!payload.eventName || !payload.eventType || !payload.startDate){
+      msg.textContent = 'Event Name, Event Type, and Start Date are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Creating…';
+    const data = await api('createEvent', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Create Event';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not create event.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Created ' + data.eventId + ' — ' + payload.eventName;
+    msg.className = 'form-msg success';
+    e.target.reset();
+    document.getElementById('eventStatus').value = 'Planned';
+    await getEventsCached(true);
+    renderEventsList();
+  });
+}
+
+async function loadOrganizers(selectId){
+  try{
+    const data = await api('listOrganizers', {});
+    if (!data.success) return;
+    const sel = document.getElementById('organizerId');
+    const current = sel.value;
+    sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+    data.organizers.forEach(org => {
+      const o = document.createElement('option');
+      o.value = org.organizerId; o.textContent = org.organizerName;
+      sel.appendChild(o);
+    });
+    sel.value = selectId || current;
+  }catch(err){ /* non-critical */ }
+}
+
+async function loadEvents(){
+  await getEventsCached(true);
+  renderEventsList();
+}
+
+function renderEventsList(){
+  const wrap = document.getElementById('eventsListWrap');
+  const events = (EVENTS_CACHE || []).filter(ev => !EVENTS_FILTER || ev.Status === EVENTS_FILTER);
+
+  if (!events.length){
+    const label = EVENTS_FILTER ? EVENTS_FILTER.toLowerCase() + ' ' : '';
+    wrap.innerHTML = `
+      <div class="empty-card">
+        <div class="icon">🎪</div>
+        <h3>No ${label}events${EVENTS_FILTER ? '' : ' yet'}</h3>
+        <p>${EVENTS_FILTER ? `No events currently have status "${EVENTS_FILTER}". ` : ''}Create your first event above.</p>
+      </div>`;
+    return;
+  }
+  wrap.innerHTML = '<div class="events-grid">' + events.map(renderEventCard).join('') + '</div>';
+}
+
+function renderEventCard(ev){
+  const statusClass = 'status-' + (ev.Status || 'planned').toLowerCase();
+  return `
+    <div class="event-card">
+      <div class="top-row">
+        <span class="event-id">${ev.EventID}</span>
+        <span class="status-pill ${statusClass}">${ev.Status || 'Planned'}</span>
+      </div>
+      <h3>${escapeHtml(ev.EventName)}</h3>
+      <div class="meta">
+        <span>📅 ${formatDateRange(ev.StartDate, ev.EndDate)}</span>
+        ${ev.Location ? `<span>📍 ${escapeHtml(ev.Location)}</span>` : ''}
+        ${ev.ExpectedSales ? `<span>💰 AED ${Number(ev.ExpectedSales).toLocaleString('en-AE')} expected</span>` : ''}
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   DAILY SALES VIEW
+   ============================================================ */
+let VAT_RATE_CACHE = 0.05;
+
+function wireSalesView(){
+  document.getElementById('grossSales').addEventListener('input', function(){
+    const preview = document.getElementById('calcPreview');
+    const gross = Number(this.value);
+    if (!gross || gross <= 0){ preview.classList.remove('show'); return; }
+    const net = gross / (1 + VAT_RATE_CACHE);
+    const vat = gross - net;
+    document.getElementById('calcVat').textContent = 'AED ' + vat.toFixed(2);
+    document.getElementById('calcNet').textContent = 'AED ' + net.toFixed(2);
+    preview.classList.add('show');
+  });
+
+  document.getElementById('salesForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('salesFormMsg');
+    const btn = document.getElementById('saveSaleBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      eventId: document.getElementById('saleEventId').value,
+      date: document.getElementById('saleDate').value,
+      posType: document.getElementById('salePosType').value,
+      grossSales: document.getElementById('grossSales').value,
+      cash: document.getElementById('saleCash').value,
+      card: document.getElementById('saleCard').value,
+      notes: document.getElementById('saleNotes').value.trim()
+    };
+
+    if (!payload.eventId || !payload.date || !payload.grossSales){
+      msg.textContent = 'Event, Date, and Gross Sales are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const data = await api('createDailySale', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Save Daily Sale';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not save. Try again.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Saved — Net AED ' + data.netSales.toFixed(2) + ' (VAT AED ' + data.vatAmount.toFixed(2) + ')';
+    msg.className = 'form-msg success';
+
+    document.getElementById('grossSales').value = '';
+    document.getElementById('saleCash').value = '';
+    document.getElementById('saleCard').value = '';
+    document.getElementById('saleNotes').value = '';
+    document.getElementById('calcPreview').classList.remove('show');
+
+    loadRecentSales();
+  });
+}
+
+async function loadRecentSales(){
+  const wrap = document.getElementById('recentSalesWrap');
+  try{
+    const data = await api('listDailySales', {});
+    if (!data.success){ showToast(data.message || 'Could not load recent sales.'); return; }
+    if (!data.sales.length){
+      wrap.innerHTML = '<div class="empty-card">No sales entries yet — the one you just saved will appear here.</div>';
+      return;
+    }
+    wrap.innerHTML = data.sales.slice(0, 15).map(s => `
+      <div class="row-card">
+        <div class="top-row">
+          <span class="primary">${escapeHtml(s.EventName)}</span>
+          <span class="amount">AED ${Number(s.GrossSales).toLocaleString('en-AE')}</span>
+        </div>
+        <div class="meta">
+          <span>📅 ${s.Date ? new Date(s.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' }) : ''}</span>
+          ${s.POSType ? `<span>${escapeHtml(s.POSType)}</span>` : ''}
+          <span>Net AED ${Number(s.NetSales).toLocaleString('en-AE')}</span>
+        </div>
+      </div>`).join('');
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card">Could not load recent entries.</div>';
+  }
+}
+
+/* ============================================================
+   EXPENSES VIEW
+   ============================================================ */
+let receiptData = null;
+
+function wireExpensesView(){
+  const input = document.getElementById('receiptInput');
+  const preview = document.getElementById('receiptPreview');
+  const zone = document.getElementById('receiptZone');
+  const thumb = document.getElementById('receiptThumb');
+  const info = document.getElementById('receiptInfo');
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      receiptData = { base64: dataUrl.split(',')[1], mimeType: file.type || 'image/jpeg', fileName: file.name || 'receipt.jpg' };
+      thumb.src = dataUrl;
+      info.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+      preview.classList.add('show');
+      zone.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('removeReceiptBtn').addEventListener('click', () => {
+    receiptData = null;
+    input.value = '';
+    preview.classList.remove('show');
+    zone.style.display = 'block';
+  });
+
+  document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('expenseFormMsg');
+    const btn = document.getElementById('saveExpenseBtn');
+    msg.textContent = ''; msg.className = 'form-msg';
+
+    const payload = {
+      eventId: document.getElementById('expEventId').value,
+      date: document.getElementById('expenseDate').value,
+      category: document.getElementById('category').value,
+      amount: document.getElementById('amount').value,
+      description: document.getElementById('description').value.trim(),
+      paidTo: document.getElementById('paidTo').value.trim(),
+      paymentMethod: document.getElementById('paymentMethod').value,
+      reference: document.getElementById('reference').value.trim(),
+      notes: document.getElementById('expenseNotes').value.trim()
+    };
+    if (receiptData){
+      payload.receiptBase64 = receiptData.base64;
+      payload.receiptMimeType = receiptData.mimeType;
+      payload.receiptFileName = receiptData.fileName;
+    }
+
+    if (!payload.eventId || !payload.date || !payload.category || !payload.amount){
+      msg.textContent = 'Event, Date, Category, and Amount are required.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = receiptData ? 'Uploading receipt…' : 'Saving…';
+    const data = await api('createExpense', payload).catch(() => null);
+    btn.disabled = false; btn.textContent = 'Save Expense';
+
+    if (!data || !data.success){
+      msg.textContent = (data && data.message) || 'Could not save. Try again.';
+      msg.className = 'form-msg error';
+      return;
+    }
+
+    msg.textContent = 'Saved ' + data.expenseId + (data.hasReceipt ? ' with receipt' : '');
+    msg.className = 'form-msg success';
+
+    document.getElementById('amount').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('paidTo').value = '';
+    document.getElementById('reference').value = '';
+    document.getElementById('expenseNotes').value = '';
+    document.getElementById('removeReceiptBtn').click();
+
+    loadRecentExpenses();
+  });
+}
+
+async function loadRecentExpenses(){
+  const wrap = document.getElementById('recentExpensesWrap');
+  try{
+    const data = await api('listExpenses', {});
+    if (!data.success){ showToast(data.message || 'Could not load recent expenses.'); return; }
+    if (!data.expenses.length){
+      wrap.innerHTML = '<div class="empty-card">No expenses yet — the one you just saved will appear here.</div>';
+      return;
+    }
+    wrap.innerHTML = data.expenses.slice(0, 15).map(ex => `
+      <div class="row-card">
+        <div class="top-row">
+          <span class="primary">${escapeHtml(ex.Category)}</span>
+          <span class="amount">AED ${Number(ex.Amount).toLocaleString('en-AE')}</span>
+        </div>
+        <div class="meta">
+          <span>📅 ${ex.Date ? new Date(ex.Date).toLocaleDateString('en-AE', { day:'numeric', month:'short' }) : ''}</span>
+          <span>${escapeHtml(ex.EventName)}</span>
+          ${ex.PaidTo ? `<span>→ ${escapeHtml(ex.PaidTo)}</span>` : ''}
+          ${ex.ReceiptUrl ? `<a class="receipt-link" href="${ex.ReceiptUrl}" target="_blank" rel="noopener">📎 Receipt</a>` : ''}
+        </div>
+      </div>`).join('');
+  }catch(err){
+    wrap.innerHTML = '<div class="empty-card">Could not load recent entries.</div>';
+  }
+}
 </script>
 
-<!-- Google Fonts (display + body + mono) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
